@@ -26,7 +26,7 @@ def module_setup(device, request, data_dir, platform_data_dir, artifact_dir):
         device.run_ssh('cp /var/log/syslog {0}/syslog.log'.format(TMP_DIR), throw=False)
         device.run_ssh('cp /var/log/messages {0}/messages.log'.format(TMP_DIR), throw=False)
         device.run_ssh('ls -la /snap > {0}/snap.ls.log'.format(TMP_DIR), throw=False)
-        device.run_ssh('ls -la /snap/jellyfin > {0}/snap.rocketchat.ls.log'.format(TMP_DIR), throw=False)
+        device.run_ssh('ls -la /snap/jellyfin > {0}/snap.ls.log'.format(TMP_DIR), throw=False)
         device.run_ssh('ls -la /var/snap/jellyfin/current/> {0}/var.current.ls.log'.format(TMP_DIR), throw=False)
         device.run_ssh('ls -la /var/snap/jellyfin/common/> {0}/var.common.ls.log'.format(TMP_DIR), throw=False)
         device.run_ssh('ls -la {0}/log > {1}/data.log.dir.ls.log'.format(data_dir, TMP_DIR), throw=False)
@@ -68,5 +68,5 @@ def test_upgrade(app_archive_path, device_host, device_password):
 
 
 def test_storage_change(device, app_dir, data_dir):
-    device.run_ssh('snap run rocketchat.storage-change > {1}/log/storage-change.log'.format(app_dir, data_dir),
+    device.run_ssh('snap run jellyfin.storage-change > {1}/log/storage-change.log'.format(app_dir, data_dir),
                    throw=False)
