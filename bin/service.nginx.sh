@@ -9,7 +9,6 @@ fi
 
 case $1 in
 start)
-    wait_for_server
 	  /bin/rm -f /var/snap/jellyfin/common/web.socket
     exec ${DIR}/nginx/sbin/nginx -c /snap/jellyfin/current/config/nginx.conf -p ${DIR}/nginx -g 'error_log stderr warn;'
     ;;
