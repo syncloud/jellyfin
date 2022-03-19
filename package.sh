@@ -10,7 +10,7 @@ fi
 
 NAME=$1
 VERSION=$2
-ARCH=$3
+ARCH=$(dpkg --print-architecture)
 
 SNAP_DIR=${DIR}/build/snap
 
