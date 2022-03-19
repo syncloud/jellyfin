@@ -12,7 +12,7 @@ BUILD_DIR=${DIR}/../build/snap/app
 docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker stop | xargs docker rm || true
 docker rmi app:syncloud || true
 docker build --build-arg VERSION=$VERSION -t app:syncloud .
-docker run app:syncloud dotnet --help
+docker run app:syncloud dotnet --help || true
 docker create --name=build app:syncloud
 mkdir -p ${BUILD_DIR}
 echo $VERSION > $BUILD_DIR/app.version
