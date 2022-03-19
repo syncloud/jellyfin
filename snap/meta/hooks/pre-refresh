@@ -5,4 +5,3 @@ sys.path.append(os.path.join(os.environ['SNAP'], 'hooks'))
 
 from installer import Installer
 Installer().pre_refresh()
-)
