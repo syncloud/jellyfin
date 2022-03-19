@@ -3,8 +3,8 @@
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 cd ${DIR}
 
-if [[ -z "$3" ]]; then
-    echo "usage $0 app version arch"
+if [[ -z "$2" ]]; then
+    echo "usage $0 app version"
     exit 1
 fi
 
