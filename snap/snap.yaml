@@ -1,0 +1,28 @@
+apps:
+  server:
+    command: bin/service.server.sh start
+    daemon: simple
+    plugs:
+    - network
+    - network-bind
+    restart-condition: always
+    start-timeout: 2000s
+  nginx:
+    command: bin/service.nginx.sh start
+    daemon: simple
+    plugs:
+    - network
+    - network-bind
+    restart-condition: always
+    stop-command: bin/service.nginx.sh stop
+    reload-command: bin/service.nginx.sh reload
+    start-timeout: 2000s
+
+  storage-change:
+    command: hooks/storage-change
+
+confinement: strict
+description: Jellyfin
+grade: stable
+name: jellyfin
+summary: Jellyfin
