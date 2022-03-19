@@ -9,6 +9,7 @@ fi
 
 case $1 in
 start)
+    timeout 100 /bin/bash -c 'until [ -S /var/snap/jellyfin/current/socket ]; do echo "waiting for socket"; sleep 1; done'
 	  /bin/rm -f /var/snap/jellyfin/common/web.socket
     exec ${DIR}/nginx/sbin/nginx -c /snap/jellyfin/current/config/nginx.conf -p ${DIR}/nginx -g 'error_log stderr warn;'
     ;;
