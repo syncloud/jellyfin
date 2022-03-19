@@ -29,7 +29,7 @@ local build(arch, test_ui) = [{
         name: "build",
         image: "debian:buster-slim",
         commands: [
-            "./node/build.sh " + version
+            "./app/build.sh " + version
         ],
         volumes: [
             {
