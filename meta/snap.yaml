@@ -1,6 +1,7 @@
 apps:
   server:
     command: bin/service.server.sh start
+    user: jellyfin
     daemon: simple
     plugs:
     - network
@@ -9,6 +10,7 @@ apps:
     start-timeout: 2000s
   nginx:
     command: bin/service.nginx.sh start
+    user: jellyfin
     daemon: simple
     plugs:
     - network
@@ -20,6 +22,9 @@ apps:
 
   storage-change:
     command: hooks/storage-change
+
+  access-change:
+    command: hooks/access-change
 
 confinement: strict
 description: Jellyfin

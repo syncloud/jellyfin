@@ -1,9 +1,11 @@
 import pytest
-import time
 from os.path import dirname, join
 from subprocess import check_output
 from syncloudlib.integration.hosts import add_host_alias
-from integration.lib import login_4
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+
+from integration.lib import login
 
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud/ui'
@@ -27,37 +29,17 @@ def test_start(module_setup, app, domain, device_host):
 
 
 def test_login(selenium, device_user, device_password):
-    login_4(selenium, device_user, device_password)
- 
-
-def test_profile(selenium, app_domain):
-    selenium.driver.get("https://{0}/account/profile".format(app_domain))
-    selenium.screenshot('profile')
-    profile_file = 'input[type="file"]'
-    # wait_or_screenshot(driver, ui_mode, screenshot_dir, EC.presence_of_element_located((By.CSS_SELECTOR, profile_file)))
-    profile_file = selenium.find_by_css(profile_file)
-    profile_file.send_keys(join(DIR, 'images', 'profile.jpeg'))
-    username = selenium.find_by_xpath("//div/label[text()='Name']/following-sibling::span/input")
-    username.send_keys('Syncloud user')
-    
-    #email = selenium.find_by_xpath("//div/label[text()='Email']/following-sibling::span/label/input")
-    #email.clear()
-    #email.send_keys('test@gmail.com')
-
-    selenium.screenshot('profile-new-name')
-
-    save = selenium.find_by_xpath("//button[text()='Save changes']")
-    save.click()
-    
-    time.sleep(10)
-
-    selenium.screenshot('profile-new-picture')
+    login(selenium, device_user, device_password)
 
 
-def test_channel(selenium, app_domain):
-    selenium.driver.get("https://{0}/channel/general".format(app_domain))
-    selenium.find_by_xpath("//*[text()='Start of conversation']")
-    selenium.screenshot('channel')
+def test_admin(selenium):
+    menu = selenium.find_by_css("span.material-icons.menu")
+    selenium.wait_or_screenshot(EC.element_to_be_clickable((By.CSS_SELECTOR, "span.material-icons.menu")))
+    menu.click()
+    button = selenium.find_by_css("span.navMenuOptionIcon.dashboard")
+    selenium.screenshot('menu')
+    button.click()
+    selenium.find_by_xpath("//span[text()='Scan All Libraries']")
 
 
 def test_teardown(driver):

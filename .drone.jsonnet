@@ -25,11 +25,27 @@ local build(arch, test_ui) = [{
             "./download.sh "
         ]
     },
+    //{
+    //    name: "build ldap plugin",
+    //    image: "mcr.microsoft.com/dotnet/sdk:5.0-buster-slim",
+    //    commands: [
+    //        "apt update && apt install tree",
+    //        "cd build/jellyfin-plugin-ldapauth-memberuid",
+    //        "dotnet publish -c Release -o out" ,
+    //        "tree"
+    //    ],
+    //    volumes: [
+    //        {
+    //            name: "shm",
+    //            path: "/dev/shm"
+    //        }
+    //    ]
+    //},
     {
         name: "build",
         image: "debian:buster-slim",
         commands: [
-            "./node/build.sh " + version
+            "./build.sh " + version
         ],
         volumes: [
             {
@@ -64,7 +80,7 @@ local build(arch, test_ui) = [{
         image: "debian:buster-slim",
         commands: [
             "VERSION=$(cat version)",
-            "./package.sh " + name + " $VERSION " + arch
+            "./package.sh " + name + " $VERSION "
         ]
     }
     ] + ( if arch == "amd64" then [
@@ -75,7 +91,7 @@ local build(arch, test_ui) = [{
           "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
           "cd integration",
           "./deps.sh",
-          "py.test -x -s verify.py --device-user=testuser --distro=jessie --domain=jessie.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".jessie.com --app=" + name
+          "py.test -x -s verify.py --distro=jessie --domain=jessie.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".jessie.com --app=" + name
         ]
     }] else []) + [
     {
@@ -85,7 +101,7 @@ local build(arch, test_ui) = [{
           "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
           "cd integration",
           "./deps.sh",
-          "py.test -x -s verify.py --device-user=testuser --distro=buster --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --arch=" + arch
+          "py.test -x -s verify.py --distro=buster --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --arch=" + arch
         ]
     }] + ( if test_ui then [
     {
@@ -113,7 +129,7 @@ local build(arch, test_ui) = [{
         commands: [
           "cd integration",
           "./deps.sh",
-          "py.test -x -s test-ui.py --device-user=testuser --distro=jessie --ui-mode=desktop --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
+          "py.test -x -s test-ui.py --distro=jessie --ui-mode=desktop --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
         ],
         volumes: [{
             name: "shm",
@@ -126,7 +142,7 @@ local build(arch, test_ui) = [{
         commands: [
           "cd integration",
           "./deps.sh",
-          "py.test -x -s test-ui.py --device-user=testuser --distro=jessie --ui-mode=mobile --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
+          "py.test -x -s test-ui.py --distro=jessie --ui-mode=mobile --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
         ],
         volumes: [{
             name: "shm",
@@ -140,7 +156,7 @@ local build(arch, test_ui) = [{
           "apt-get update && apt-get install -y sshpass openssh-client libxml2-dev libxslt-dev build-essential libz-dev curl",
           "cd integration",
           "pip install -r requirements.txt",
-          "py.test -x -s test-ui.py --device-user=testuser --distro=buster --ui-mode=desktop --domain=buster.com --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
+          "py.test -x -s test-ui.py --distro=buster --ui-mode=desktop --domain=buster.com --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
         ]
     },
     {
@@ -149,7 +165,7 @@ local build(arch, test_ui) = [{
         commands: [
           "cd integration",
           "./deps.sh",
-          "py.test -x -s test-ui.py --device-user=testuser --distro=buster --ui-mode=mobile --domain=buster.com --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
+          "py.test -x -s test-ui.py --distro=buster --ui-mode=mobile --domain=buster.com --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
         ]
     } ] else [] ) +
    ( if arch == "amd64" then [
@@ -160,7 +176,7 @@ local build(arch, test_ui) = [{
           "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
           "cd integration",
           "./deps.sh",
-          "py.test -x -s test-upgrade.py --device-user=testuser --distro=buster --ui-mode=desktop --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
+          "py.test -x -s test-upgrade.py --distro=buster --ui-mode=desktop --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
         ],
         privileged: true,
         volumes: [{
@@ -180,12 +196,12 @@ local build(arch, test_ui) = [{
             }
         },
         commands: [
-          "PACKAGE=$(cat package.name)",
-          "apt update && apt install -y wget",
-          "wget https://github.com/syncloud/snapd/releases/download/1/syncloud-release-" + arch,
-          "chmod +x syncloud-release-*",
-          "./syncloud-release-* publish -f $PACKAGE -b $DRONE_BRANCH"
-         ],
+            "PACKAGE=$(cat package.name)",
+            "apt update && apt install -y wget",
+            "wget https://github.com/syncloud/snapd/releases/download/1/syncloud-release-" + arch + " -O release --progress=dot:giga",
+            "chmod +x release",
+            "./release publish -f $PACKAGE -b $DRONE_BRANCH"
+        ],
         when: {
             branch: ["stable", "master"]
         }
@@ -344,8 +360,3 @@ local build(arch, test_ui) = [{
 build("amd64", true) + 
 build("arm64", false) +
 build("arm", false)
-
-
-
-
-
