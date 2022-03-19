@@ -22,5 +22,5 @@ docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker
 docker rmi app:syncloud || true
 tar xf app.tar
 rm -rf app.tar
-mkdir $BUILD_DIR/config/plugins/ldapauth
+mkdir -p $BUILD_DIR/config/plugins/ldapauth
 unzip ${DIR}/../build/ldap-authentication.zip -d $BUILD_DIR/config/plugins/ldapauth
