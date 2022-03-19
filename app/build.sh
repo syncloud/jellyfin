@@ -13,7 +13,7 @@ docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker
 docker rmi app:syncloud || true
 docker build --build-arg VERSION=$VERSION -t app:syncloud .
 docker run app:syncloud dotnet --help || true
-docker create --name=build app:syncloud
+docker create --name=app app:syncloud
 mkdir -p ${BUILD_DIR}
 echo $VERSION > $BUILD_DIR/app.version
 cd ${BUILD_DIR}
