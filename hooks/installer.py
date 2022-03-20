@@ -70,7 +70,7 @@ class Installer:
 
     def _install(self):
         self.log.info('configure install') 
-               app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
+        app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
         with open(self.install_file, 'w') as f:
             f.write('installed\n')
 
@@ -78,4 +78,3 @@ class Installer:
     def prepare_storage(self):
         app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
         return app_storage_dir
-
