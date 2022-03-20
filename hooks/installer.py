@@ -46,11 +46,11 @@ class Installer:
         fs.makepath(log_dir)
         fs.makepath(join(self.data_dir, 'nginx'))
         fs.makepath(join(self.data_dir, 'data'))
-        fs.makepath(join(self.data_dir, 'data', 'config'))
+        
         fs.makepath(join(self.data_dir, 'data', 'plugins'))
         fs.makepath(join(self.data_dir, 'cache'))
         fs.makepath(join(self.data_dir, 'config'))
-        shutil.copy(join(self.snap_dir, 'config', 'system.xml'), join(self.data_dir, 'config', 'system.xml'))
+        shutil.copytree(join(self.snap_dir, 'config', 'jellyfin'), join(self.data_dir, 'config'), dirs_exist_ok=True)
         shutil.copytree(join(self.snap_dir, 'app', 'plugins', 'LDAP-Auth'), join(self.data_dir, 'data', 'plugins', 'LDAP-Auth'))
 
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
