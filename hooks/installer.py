@@ -46,6 +46,8 @@ class Installer:
         fs.makepath(log_dir)
         fs.makepath(join(self.data_dir, 'nginx'))
         fs.makepath(join(self.data_dir, 'data'))
+        fs.makepath(join(self.data_dir, 'data', 'config'))
+        fs.makepath(join(self.data_dir, 'data', 'plugins'))
         fs.makepath(join(self.data_dir, 'cache'))
         shutil.copy(join(self.snap_dir, 'config', 'system.xml'), join(self.data_dir, 'data', 'config', 'system.xml'))
         shutil.copytree(join(self.snap_dir, 'plugins', 'LDAP-Auth'), join(self.data_dir, 'data', 'plugins', 'LDAP-Auth'))
