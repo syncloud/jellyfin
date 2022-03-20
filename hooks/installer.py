@@ -40,7 +40,7 @@ class Installer:
         self.init_config()
 
     def init_config(self):
-        #linux.useradd(USER_NAME)
+        linux.useradd(USER_NAME)
 
         log_dir = join(self.common_dir, 'log')
         fs.makepath(log_dir)
@@ -78,3 +78,4 @@ class Installer:
     def prepare_storage(self):
         app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
         return app_storage_dir
+
