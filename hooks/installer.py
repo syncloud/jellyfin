@@ -33,7 +33,7 @@ class Installer:
 
     def post_refresh(self):
         self.log.info('post refresh')
-        self.init_config()
+        #self.init_config()
 
     def install(self):
         self.log.info('install')
