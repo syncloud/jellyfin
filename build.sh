@@ -7,7 +7,7 @@ apt install -y libltdl7 libnss3 wget unzip
 
 VERSION=$1
 
-BUILD_DIR=${DIR}/../build/snap/app
+BUILD_DIR=${DIR}/build/snap/app
 
 docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker stop | xargs docker rm || true
 docker rmi app:syncloud || true
@@ -22,5 +22,5 @@ docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker
 docker rmi app:syncloud || true
 tar xf app.tar
 rm -rf app.tar
-mkdir -p $BUILD_DIR/config/plugins/ldapauth
-unzip ${DIR}/../build/ldap-authentication.zip -d $BUILD_DIR/config/plugins/ldapauth
+mkdir -p $BUILD_DIR/plugins/LDAP-Auth
+unzip ${DIR}/build/ldap-authentication.zip -d $BUILD_DIR/plugins/LDAP-Auth

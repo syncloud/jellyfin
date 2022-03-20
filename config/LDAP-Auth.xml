@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PluginConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LdapServer>localhost</LdapServer>
+  <LdapBaseDn>o=admin,dc=syncloud</LdapBaseDn>
+  <LdapPort>389</LdapPort>
+  <LdapSearchAttributes>uid, cn, mail, displayName</LdapSearchAttributes>
+  <LdapUsernameAttribute>uid</LdapUsernameAttribute>
+  <LdapSearchFilter>(memberOf=CN=JellyfinUsers,DC=contoso,DC=com)</LdapSearchFilter>
+  <LdapAdminFilter>(enabledService=JellyfinAdministrator)</LdapAdminFilter>
+  <LdapBindUser>CN=BindUser,DC=contoso,DC=com</LdapBindUser>
+  <LdapBindPassword>password</LdapBindPassword>
+  <CreateUsersFromLdap>true</CreateUsersFromLdap>
+  <UseSsl>true</UseSsl>
+  <UseStartTls>false</UseStartTls>
+  <SkipSslVerify>false</SkipSslVerify>
+  <EnableCaseInsensitiveUsername>false</EnableCaseInsensitiveUsername>
+</PluginConfiguration>
