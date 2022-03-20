@@ -27,9 +27,15 @@
   <EnableRemoteAccess>true</EnableRemoteAccess>
   <BaseUrl />
   <LocalNetworkSubnets />
-  <LocalNetworkAddresses />
+  <LocalNetworkAddresses>
+    <string>localhost</string>
+  </LocalNetworkAddresses>
   <RequireHttps>false</RequireHttps>
   <RemoteIPFilter />
   <IsRemoteIPFilterBlacklist>false</IsRemoteIPFilterBlacklist>
-  <KnownProxies />
+  <KnownProxies>
+    <string>{{ domain }}</string>
+    <string>{{ local_ipv4 }}</string>
+    <string>{{ ipv6 }}</string>
+  </KnownProxies>
 </NetworkConfiguration>

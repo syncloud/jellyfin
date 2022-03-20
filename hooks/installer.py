@@ -50,13 +50,32 @@ class Installer:
         fs.makepath(join(self.data_dir, 'data', 'plugins'))
         fs.makepath(join(self.data_dir, 'cache'))
         fs.makepath(join(self.data_dir, 'config'))
-        shutil.copytree(join(self.snap_dir, 'config', 'jellyfin'), join(self.data_dir, 'config'), dirs_exist_ok=True)
         shutil.copytree(join(self.snap_dir, 'app', 'plugins', 'LDAP-Auth'), join(self.data_dir, 'data', 'plugins', 'LDAP-Auth'))
+        self.refresh_config()
+        self.prepare_storage()
+
+    def refresh_config(self):
+        variables = {
+            'domain': urls.get_app_domain_name(APP_NAME),
+            'local_ipv4': self.local_ipv4(),
+            'ipv6': self.ipv6()
+        }
+        gen.generate_files(join(self.snap_dir, 'config', 'jellyfin'), join(self.data_dir, 'config'), variables)
 
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
         fs.chownpath(self.common_dir, USER_NAME, recursive=True)
 
-        self.prepare_storage()
+    def local_ipv4():
+        try:
+            return check_output("/snap/platform/current/bin/cli ipv4", shell=True).decode().strip()
+        except CalledProcessError as e:
+            return 'localhost'
+
+    def ipv6():
+        try:
+            return check_output("/snap/platform/current/bin/cli ipv6", shell=True).decode().strip()
+        except CalledProcessError as e:
+            return 'localhost'
 
     def configure(self):
         self.log.info('configure')
@@ -74,7 +93,8 @@ class Installer:
         with open(self.install_file, 'w') as f:
             f.write('installed\n')
 
+    def on_domain_change(self):
+        self.refresh_config()
 
     def prepare_storage(self):
-        app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
-        return app_storage_dir
+        return storage.init_storage(APP_NAME, USER_NAME)
