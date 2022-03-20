@@ -49,6 +49,7 @@ class Installer:
         fs.makepath(join(self.data_dir, 'data', 'config'))
         fs.makepath(join(self.data_dir, 'data', 'plugins'))
         fs.makepath(join(self.data_dir, 'cache'))
+        fs.makepath(join(self.data_dir, 'config'))
         
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
         fs.chownpath(self.common_dir, USER_NAME, recursive=True)
