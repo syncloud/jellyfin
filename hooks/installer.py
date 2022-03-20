@@ -50,7 +50,7 @@ class Installer:
         fs.makepath(join(self.data_dir, 'data', 'plugins'))
         fs.makepath(join(self.data_dir, 'cache'))
         shutil.copy(join(self.snap_dir, 'config', 'system.xml'), join(self.data_dir, 'data', 'config', 'system.xml'))
-        shutil.copytree(join(self.snap_dir, 'plugins', 'LDAP-Auth'), join(self.data_dir, 'data', 'plugins', 'LDAP-Auth'))
+        shutil.copytree(join(self.snap_dir, 'app', 'plugins', 'LDAP-Auth'), join(self.data_dir, 'data', 'plugins', 'LDAP-Auth'))
 
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
         fs.chownpath(self.common_dir, USER_NAME, recursive=True)
