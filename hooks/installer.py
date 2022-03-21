@@ -60,7 +60,8 @@ class Installer:
             'local_ipv4': self.local_ipv4(),
             'ipv6': self.ipv6()
         }
-        gen.generate_files(join(self.snap_dir, 'config', 'jellyfin'), join(self.data_dir, 'config'), variables)
+        gen.generate_files(join(self.snap_dir, 'config', 'jellyfin', 'config'), join(self.data_dir, 'config'), variables)
+        gen.generate_files(join(self.snap_dir, 'config', 'jellyfin', 'plugins'), join(self.data_dir, 'data' , 'plugins'), variables)
 
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
         fs.chownpath(self.common_dir, USER_NAME, recursive=True)

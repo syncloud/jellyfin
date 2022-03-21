@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PluginConfiguration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <LdapServer>localhost</LdapServer>
+  <LdapBaseDn>dc=syncloud,dc=org</LdapBaseDn>
+  <LdapPort>389</LdapPort>
+  <LdapSearchAttributes>cn</LdapSearchAttributes>
+  <LdapUsernameAttribute>cn</LdapUsernameAttribute>
+  <LdapSearchFilter>(objectclass=inetOrgPerson)</LdapSearchFilter>
+  <LdapAdminFilter>(memberOf=cn=syncloud,ou=groups,dc=syncloud,dc=org)</LdapAdminFilter>
+  <LdapBindUser>cn=admin,dc=syncloud,dc=org</LdapBindUser>
+  <LdapBindPassword>syncloud</LdapBindPassword>
+  <CreateUsersFromLdap>true</CreateUsersFromLdap>
+  <UseSsl>false</UseSsl>
+  <UseStartTls>false</UseStartTls>
+  <SkipSslVerify>false</SkipSslVerify>
+  <EnableCaseInsensitiveUsername>false</EnableCaseInsensitiveUsername>
+</PluginConfiguration>
