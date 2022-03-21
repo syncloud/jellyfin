@@ -65,13 +65,13 @@ class Installer:
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
         fs.chownpath(self.common_dir, USER_NAME, recursive=True)
 
-    def local_ipv4():
+    def local_ipv4(self):
         try:
             return check_output("/snap/platform/current/bin/cli ipv4", shell=True).decode().strip()
         except CalledProcessError as e:
             return 'localhost'
 
-    def ipv6():
+    def ipv6(self):
         try:
             return check_output("/snap/platform/current/bin/cli ipv6", shell=True).decode().strip()
         except CalledProcessError as e:
