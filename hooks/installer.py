@@ -14,6 +14,8 @@ import re
 
 APP_NAME = 'jellyfin'
 USER_NAME = 'jellyfin'
+PORT = 8096
+REST_URL = "http://localhost:{0}".format(PORT)
 
 
 class Installer:
@@ -61,8 +63,7 @@ class Installer:
             'ipv6': self.ipv6()
         }
         gen.generate_files(join(self.snap_dir, 'config', 'jellyfin', 'config'), join(self.data_dir, 'config'), variables)
-        shutil.copytree(join(self.snap_dir, 'config', 'jellyfin', 'plugins'), join(self.data_dir, 'data' , 'plugins'), dirs_exist_ok=True)
-
+        shutil.copytree(join(self.snap_dir, 'config', 'jellyfin', 'plugins'), join(self.data_dir, 'data', 'plugins'), dirs_exist_ok=True)
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
         fs.chownpath(self.common_dir, USER_NAME, recursive=True)
 
@@ -91,6 +92,7 @@ class Installer:
     def _install(self):
         self.log.info('configure install') 
         app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
+        requests.post("{0}/Startup/Complete".format(REST_URL))
         with open(self.install_file, 'w') as f:
             f.write('installed\n')
 
