@@ -92,6 +92,7 @@ class Installer:
     def _install(self):
         self.log.info('configure install') 
         app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
+        wait_for_rest(requests.session(), REST_URL, 200, 100)
         requests.post("{0}/Startup/Complete".format(REST_URL))
         with open(self.install_file, 'w') as f:
             f.write('installed\n')
