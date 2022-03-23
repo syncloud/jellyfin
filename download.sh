@@ -20,5 +20,5 @@ mv nginx ${BUILD_DIR}
 
 wget -c --progress=dot:giga https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_${LDAP_VERSION}.zip -O ldap-authentication.zip
 
-wget -c --progress=dot:giga https://github.com/cyberb/jellyfin-plugin-ldapauth/archive/refs/heads/variables.zip -O ldap-src.zip
+wget -c --progress=dot:giga https://github.com/cyberb/jellyfin-plugin-ldapauth/archive/refs/heads/variables-13.zip -O ldap-src.zip
 unzip ldap-src.zip    
