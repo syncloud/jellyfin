@@ -24,4 +24,4 @@ tar xf app.tar
 rm -rf app.tar
 mkdir -p $BUILD_DIR/plugins/LDAP-Auth
 #unzip ${DIR}/build/ldap-authentication.zip -d $BUILD_DIR/plugins/LDAP-Auth
-cp $DIR/build/jellyfin-plugin-ldapauth-variables-13/out/* $BUILD_DIR/plugins/LDAP-Auth
+cp $DIR/build/jellyfin-plugin-ldapauth-variables/out/* $BUILD_DIR/plugins/LDAP-Auth
