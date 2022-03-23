@@ -27,7 +27,7 @@ local build(arch, test_ui) = [{
     },
     {
         name: "build ldap plugin",
-        image: "mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim",
+        image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim",
         commands: [
             "cd build/jellyfin-plugin-ldapauth-variables",
             "dotnet publish -c Release -o out" 
