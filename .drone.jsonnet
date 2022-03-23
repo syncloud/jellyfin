@@ -26,6 +26,24 @@ local build(arch, test_ui) = [{
         ]
     },
     {
+        name: "build ldap plugin",
+        image: "mcr.microsoft.com/dotnet/sdk:5.0-bullseye-slim",
+        commands: [
+            "cd jellyfin-plugin-ldapauth-variables",
+            "dotnet publish -c Release -o out" 
+        ],
+        volumes: [
+            {
+                name: "docker",
+                path: "/usr/bin/docker"
+            },
+            {
+               name: "docker.sock",
+               path: "/var/run/docker.sock"
+            }
+        ]
+    },
+    {
         name: "build",
         image: "debian:buster-slim",
         commands: [
