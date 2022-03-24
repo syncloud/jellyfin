@@ -29,7 +29,7 @@ local build(arch, test_ui) = [{
         name: "build ldap plugin",
         image: "mcr.microsoft.com/dotnet/sdk:5.0-buster-slim",
         commands: [
-            apt install tree",
+            "apt install tree",
             "cd build/jellyfin-plugin-ldapauth-variables",
             "dotnet publish -c Release -o out" ,
             "tree"
@@ -364,4 +364,3 @@ local build(arch, test_ui) = [{
 build("amd64", true) + 
 build("arm64", false) +
 build("arm", false)
-
