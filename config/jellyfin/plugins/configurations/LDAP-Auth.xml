@@ -6,7 +6,7 @@
   <LdapSearchAttributes>cn</LdapSearchAttributes>
   <LdapUsernameAttribute>cn</LdapUsernameAttribute>
   <LdapSearchFilter>(objectclass=inetOrgPerson)</LdapSearchFilter>
-  <LdapAdminFilter>(&(cn=syncloud)(memberUid=:username))</LdapAdminFilter>
+  <LdapAdminFilter>(&#38;(cn=syncloud)(memberUid=:username))</LdapAdminFilter>
   <LdapBindUser>cn=admin,dc=syncloud,dc=org</LdapBindUser>
   <LdapBindPassword>syncloud</LdapBindPassword>
   <CreateUsersFromLdap>true</CreateUsersFromLdap>
