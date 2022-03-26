@@ -36,12 +36,8 @@ local build(arch, test_ui) = [{
         ],
         volumes: [
             {
-                name: "docker",
-                path: "/usr/bin/docker"
-            },
-            {
-               name: "docker.sock",
-               path: "/var/run/docker.sock"
+                name: "shm",
+                path: "/dev/shm"
             }
         ]
     },
