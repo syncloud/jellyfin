@@ -29,5 +29,4 @@ def test_start(module_setup, app, device_host, domain, device):
 
 
 def test_upgrade(device, selenium, device_user, device_password, device_host, app_archive_path, app_domain, app_dir):
-
-
+    pass

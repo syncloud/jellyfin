@@ -1,8 +1,8 @@
 import pytest
-import time
 from os.path import dirname, join
 from subprocess import check_output
 from syncloudlib.integration.hosts import add_host_alias
+
 from integration.lib import login
 
 DIR = dirname(__file__)
@@ -28,15 +28,16 @@ def test_start(module_setup, app, domain, device_host):
 
 def test_login(selenium, device_user, device_password):
     login(selenium, device_user, device_password)
- 
 
-def test_admin(selenium, app_domain):
-    
-    menu = selenium.find_by_css("span.navMenuOptionIcon.home")
+
+def test_admin(selenium):
+    menu = selenium.find_by_css("span.material-icons.menu")
     menu.click()
-    button = selenium.find_by_css("span.navMenuOptionIcon.adminDashboard")
+    button = selenium.find_by_css("span.navMenuOptionText")
+    selenium.screenshot('menu')
     button.click()
-    
-    
+    selenium.find_by_css("//span[text()='Scan All Libraries']")
+
+
 def test_teardown(driver):
     driver.quit()
