@@ -30,35 +30,13 @@ def test_login(selenium, device_user, device_password):
     login(selenium, device_user, device_password)
  
 
-def test_profile(selenium, app_domain):
-    selenium.driver.get("https://{0}/account/profile".format(app_domain))
-    selenium.screenshot('profile')
-    profile_file = 'input[type="file"]'
-    # wait_or_screenshot(driver, ui_mode, screenshot_dir, EC.presence_of_element_located((By.CSS_SELECTOR, profile_file)))
-    profile_file = selenium.find_by_css(profile_file)
-    profile_file.send_keys(join(DIR, 'images', 'profile.jpeg'))
-    username = selenium.find_by_xpath("//div/label[text()='Name']/following-sibling::span/input")
-    username.send_keys('Syncloud user')
+def test_admin(selenium, app_domain):
     
-    #email = selenium.find_by_xpath("//div/label[text()='Email']/following-sibling::span/label/input")
-    #email.clear()
-    #email.send_keys('test@gmail.com')
-
-    selenium.screenshot('profile-new-name')
-
-    save = selenium.find_by_xpath("//button[text()='Save changes']")
-    save.click()
+    menu = selenium.find_by_css("span.navMenuOptionIcon.home")
+    menu.click()
+    button = selenium.find_by_css("span.navMenuOptionIcon.adminDashboard")
+    button.click()
     
-    time.sleep(10)
-
-    selenium.screenshot('profile-new-picture')
-
-
-def test_channel(selenium, app_domain):
-    selenium.driver.get("https://{0}/channel/general".format(app_domain))
-    selenium.find_by_xpath("//*[text()='Start of conversation']")
-    selenium.screenshot('channel')
-
-
+    
 def test_teardown(driver):
     driver.quit()
