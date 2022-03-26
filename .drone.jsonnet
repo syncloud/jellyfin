@@ -30,7 +30,7 @@ local build(arch, test_ui) = [{
         image: "mcr.microsoft.com/dotnet/sdk:5.0-buster-slim",
         commands: [
             "apt update && apt install tree",
-            "cd build/jellyfin-plugin-ldapauth-variables",
+            "cd build/jellyfin-plugin-ldapauth-memberuid",
             "dotnet publish -c Release -o out" ,
             "tree"
         ],
