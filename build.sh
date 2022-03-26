@@ -24,6 +24,6 @@ tar xf app.tar
 rm -rf app.tar
 mkdir -p $BUILD_DIR/plugins/LDAP-Auth
 #unzip ${DIR}/build/ldap-authentication.zip -d $BUILD_DIR/plugins/LDAP-Auth
-cp $DIR/build/jellyfin-plugin-ldapauth-variables/out/LDAP-Auth.dll $BUILD_DIR/plugins/LDAP-Auth
-cp $DIR/build/jellyfin-plugin-ldapauth-variables/out/Novell.Directory.Ldap.NETStandard.dll $BUILD_DIR/plugins/LDAP-Auth
+cp $DIR/build/jellyfin-plugin-ldapauth-memberuid/out/LDAP-Auth.dll $BUILD_DIR/plugins/LDAP-Auth
+cp $DIR/build/jellyfin-plugin-ldapauth-memberuid/out/Novell.Directory.Ldap.NETStandard.dll $BUILD_DIR/plugins/LDAP-Auth
 cp $DIR/config/jellyfin/meta.json $BUILD_DIR/plugins/LDAP-Auth
