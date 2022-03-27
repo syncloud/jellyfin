@@ -36,7 +36,7 @@ def test_admin(selenium):
     menu = selenium.find_by_css("span.material-icons.menu")
     selenium.wait_or_screenshot(EC.element_to_be_clickable((By.CSS_SELECTOR, "span.material-icons.menu")))
     menu.click()
-    button = selenium.find_by_css("span.navMenuOptionText")
+    button = selenium.find_by_css("span.navMenuOptionIcon.dashboard")
     selenium.screenshot('menu')
     button.click()
     selenium.find_by_css("//span[text()='Scan All Libraries']")
