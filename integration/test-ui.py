@@ -39,7 +39,7 @@ def test_admin(selenium):
     button = selenium.find_by_css("span.navMenuOptionIcon.dashboard")
     selenium.screenshot('menu')
     button.click()
-    selenium.find_by_css("//span[text()='Scan All Libraries']")
+    selenium.find_by_xpath("//span[text()='Scan All Libraries']")
 
 
 def test_teardown(driver):
