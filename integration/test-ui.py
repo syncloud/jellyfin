@@ -3,6 +3,7 @@ from os.path import dirname, join
 from subprocess import check_output
 from syncloudlib.integration.hosts import add_host_alias
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
 from integration.lib import login
 
