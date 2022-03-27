@@ -2,6 +2,7 @@ import pytest
 from os.path import dirname, join
 from subprocess import check_output
 from syncloudlib.integration.hosts import add_host_alias
+from selenium.webdriver.support import expected_conditions as EC
 
 from integration.lib import login
 
@@ -32,6 +33,7 @@ def test_login(selenium, device_user, device_password):
 
 def test_admin(selenium):
     menu = selenium.find_by_css("span.material-icons.menu")
+    selenium.wait_or_screenshot(EC.element_to_be_clickable((By.CSS_SELECTOR, "span.material-icons.menu")))
     menu.click()
     button = selenium.find_by_css("span.navMenuOptionText")
     selenium.screenshot('menu')
