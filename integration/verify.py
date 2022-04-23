@@ -67,6 +67,14 @@ def test_upgrade(app_archive_path, device_host, device_password):
     local_install(device_host, device_password, app_archive_path)
 
 
+def test_ffmpeg(device, app_dir, data_dir):
+    assert 'Video encoder' in device.run_ssh('{0}/bin/ffmpeg.sh --help'.format(app_dir))
+
+
+def test_ffprobe(device, app_dir, data_dir):
+    assert 'streams analyzer' in device.run_ssh('{0}/bin/ffprobe.sh --help'.format(app_dir))
+
+
 def test_storage_change(device, app_dir, data_dir):
     device.run_ssh('snap run jellyfin.storage-change > {1}/log/storage-change.log'.format(app_dir, data_dir),
                    throw=False)
