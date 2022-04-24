@@ -4,4 +4,5 @@ LIBS=$(echo ${DIR}/usr/lib/*-linux-gnu*)
 LIBS="$LIBS:$(echo ${DIR}/lib/*-linux-gnu*)"
 LIBS="$LIBS:$(echo ${DIR}/usr/lib)"
 LIBS="$LIBS:$(echo ${DIR}/usr/lib/jellyfin-ffmpeg)/lib"
-exec ${DIR}/lib/*-linux*/ld-*.so --library-path $LIBS ${DIR}/usr/lib/jellyfin-ffmpeg/ffmpeg "$@"
+LIBS="$LIBS:$(echo ${DIR}/lib/jellyfin-ffmpeg)"
+exec ${DIR}/lib/*-linux*/ld-*.so --library-path $LIBS ${DIR}/usr/lib/jellyfin-ffmpeg/ffprobe "$@"
