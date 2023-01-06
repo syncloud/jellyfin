@@ -7,6 +7,11 @@ VERSION=$1
 
 BUILD_DIR=${DIR}/build/snap/app
 
+while ! docker ps; do
+    echo "waiting for docker"
+    sleep 2
+done
+
 docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker stop | xargs docker rm || true
 docker rmi app:syncloud || true
 docker build --build-arg VERSION=$VERSION -t app:syncloud .
