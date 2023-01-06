@@ -112,32 +112,6 @@ local build(arch, test_ui, dind) = [{
         ]
     },
     {
-        name: "test-ui-desktop-jessie",
-        image: "python:3.8-slim-buster",
-        commands: [
-          "cd integration",
-          "./deps.sh",
-          "py.test -x -s test-ui.py --distro=jessie --ui-mode=desktop --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
-        ],
-        volumes: [{
-            name: "shm",
-            path: "/dev/shm"
-        }]
-    },
-    {
-        name: "test-ui-mobile-jessie",
-        image: "python:3.8-slim-buster",
-        commands: [
-          "cd integration",
-          "./deps.sh",
-          "py.test -x -s test-ui.py --distro=jessie --ui-mode=mobile --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
-        ],
-        volumes: [{
-            name: "shm",
-            path: "/dev/shm"
-        }]
-    },
-    {
         name: "test-ui-desktop-buster",
         image: "python:3.8-slim-buster",
         commands: [
