@@ -1,8 +1,8 @@
 local name = "jellyfin";
-local version = "10.7.7";
+local version = "10.8.8";
 local browser = "firefox";
 
-local build(arch, test_ui) = [{
+local build(arch, test_ui, dind) = [{
     kind: "pipeline",
     type: "docker",
     name: arch,
@@ -43,36 +43,28 @@ local build(arch, test_ui) = [{
     //},
     {
         name: "build",
-        image: "debian:buster-slim",
+        image: "docker:" + dind,
         commands: [
             "./build.sh " + version
         ],
         volumes: [
             {
-                name: "docker",
-                path: "/usr/bin/docker"
-            },
-            {
-               name: "docker.sock",
-               path: "/var/run/docker.sock"
-            }
+                    name: "dockersock",
+                    path: "/var/run"
+                }
         ]
     },
     {
         name: "package python",
-        image: "debian:buster-slim",
+        image: "docker:" + dind,
         commands: [
             "./python/build.sh"
         ],
         volumes: [
             {
-                name: "docker",
-                path: "/usr/bin/docker"
-            },
-            {
-                name: "docker.sock",
-                path: "/var/run/docker.sock"
-            }
+                    name: "dockersock",
+                    path: "/var/run"
+                }
         ]
     },
     {
@@ -113,14 +105,10 @@ local build(arch, test_ui) = [{
             "PRESET": "-preset ultrafast -movflags faststart"
         },
         volumes: [
-            {
-                name: "shm",
-                path: "/dev/shm"
-            },
            {
-                name: "videos",
-                path: "/videos"
-            }
+                    name: "dockersock",
+                    path: "/var/run"
+                }
         ]
     },
     {
@@ -243,22 +231,7 @@ local build(arch, test_ui) = [{
         "pull_request"
       ]
     },
-    services: ( if arch == "amd64" then [
-        {
-            name: name + ".jessie.com",
-            image: "syncloud/platform-jessie-" + arch,
-            privileged: true,
-            volumes: [
-                {
-                    name: "dbus",
-                    path: "/var/run/dbus"
-                },
-                {
-                    name: "dev",
-                    path: "/dev"
-                }
-            ]
-        }] else []) + [
+    services:  [
         {
             name: name + ".buster.com",
             image: "syncloud/platform-buster-" + arch + ":22.01",
@@ -309,17 +282,9 @@ local build(arch, test_ui) = [{
             temp: {}
         },
         {
-            name: "docker",
-            host: {
-                path: "/usr/bin/docker"
-            }
-        },
-        {
-            name: "docker.sock",
-            host: {
-                path: "/var/run/docker.sock"
-            }
-        }
+                name: "dockersock",
+                temp: {}
+            },
     ]
 },
 {
@@ -357,6 +322,6 @@ local build(arch, test_ui) = [{
      }
  }];
 
-build("amd64", true) + 
-build("arm64", false) +
-build("arm", false)
+bbuild("amd64", true, "20.10.21-dind") +
+build("arm64", false, "19.03.8-dind") +
+build("arm", false, "19.03.8-dind")
