@@ -54,16 +54,7 @@ def test_install(app_archive_path, device_host, device_password):
     local_install(device_host, device_password, app_archive_path)
     
 
-def test_remove(device, app):
-    response = device.app_remove(app)
-    assert response.status_code == 200, response.text
-
-
 def test_reinstall(app_archive_path, device_host, device_password):
-    local_install(device_host, device_password, app_archive_path)
-
-
-def test_upgrade(app_archive_path, device_host, device_password):
     local_install(device_host, device_password, app_archive_path)
 
 

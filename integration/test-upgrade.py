@@ -28,5 +28,9 @@ def test_start(module_setup, app, device_host, domain, device):
     device.run_ssh('mkdir {0}'.format(TMP_DIR), throw=False)
 
 
-def test_upgrade(device, selenium, device_user, device_password, device_host, app_archive_path, app_domain, app_dir):
-    pass
+def test_upgrade(device, device_user, device_password, device_host, app_archive_path, app_domain, app):
+    device.run_ssh('snap remove {0}'.format(app))
+    device.run_ssh('snap install {0}'.format(app), retries=10)
+    local_install(device_host, device_password, app_archive_path)
+    wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
+
