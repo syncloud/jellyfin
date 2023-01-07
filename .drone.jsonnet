@@ -90,15 +90,19 @@ local build(arch, test_ui, dind) = [{
         image: "selenium/video:ffmpeg-4.3.1-20220208",
         detach: true,
         environment: {
-            "DISPLAY_CONTAINER_NAME": "selenium",
-            "PRESET": "-preset ultrafast -movflags faststart"
-        },
-        volumes: [
-           {
-                    name: "dockersock",
-                    path: "/var/run"
-                }
-        ]
+                DISPLAY_CONTAINER_NAME: "selenium",
+                FILE_NAME: "video.mkv"
+            },
+            volumes: [
+            {
+                name: "shm",
+                path: "/dev/shm"
+            },
+            {
+                name: "videos",
+                path: "/videos"
+            }
+]
     },
     {
         name: "test-ui-desktop-buster",
