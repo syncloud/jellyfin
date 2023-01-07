@@ -26,7 +26,8 @@ docker rmi app:syncloud || true
 tar xf app.tar
 rm -rf app.tar
 
-mkdir -p $BUILD_DIR/plugins
+rm -rf $BUILD_DIR/plugins/LDAP-Auth
+mkdir -p $BUILD_DIR/plugins/LDAP-Auth
 
 #binary
 unzip ${DIR}/build/ldap-authentication.zip -d $BUILD_DIR/plugins/LDAP-Auth
