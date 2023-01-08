@@ -25,22 +25,22 @@ local build(arch, test_ui, dind) = [{
             "./download.sh "
         ]
     },
-    //{
-    //    name: "build ldap plugin",
-    //    image: "mcr.microsoft.com/dotnet/sdk:5.0-buster-slim",
-    //    commands: [
-    //        "apt update && apt install tree",
-    //        "cd build/jellyfin-plugin-ldapauth-memberuid",
-    //        "dotnet publish -c Release -o out" ,
-    //        "tree"
-    //    ],
-    //    volumes: [
-    //        {
-    //            name: "shm",
-    //            path: "/dev/shm"
-    //        }
-    //    ]
-    //},
+    {
+        name: "build ldap plugin",
+        image: "mcr.microsoft.com/dotnet/sdk:6.0-buster-slim",
+        commands: [
+            "apt update && apt install tree",
+            "cd build/jellyfin-plugin-ldapauth-memberuid",
+            "dotnet publish -c Release -o out" ,
+            "tree"
+        ],
+        volumes: [
+            {
+                name: "shm",
+                path: "/dev/shm"
+            }
+        ]
+    },
     {
         name: "build",
         image: "docker:" + dind,
