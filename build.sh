@@ -12,8 +12,6 @@ while ! docker ps; do
     sleep 2
 done
 
-docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker stop | xargs docker rm || true
-docker rmi app:syncloud || true
 docker build --build-arg VERSION=$VERSION -t app:syncloud .
 docker run app:syncloud dotnet --help || true
 docker create --name=app app:syncloud
@@ -21,13 +19,10 @@ mkdir -p ${BUILD_DIR}
 echo $VERSION > $BUILD_DIR/app.version
 cd ${BUILD_DIR}
 docker export app -o app.tar
-docker ps -a -q --filter ancestor=app:syncloud --format="{{.ID}}" | xargs docker stop | xargs docker rm || true
-docker rmi app:syncloud || true
 tar xf app.tar
 rm -rf app.tar
 
-rm -rf $BUILD_DIR/plugins/LDAP-Auth
-
+#rm -rf $BUILD_DIR/plugins/LDAP-Auth
 
 #binary
 #mkdir -p $BUILD_DIR/plugins/LDAP-Auth
