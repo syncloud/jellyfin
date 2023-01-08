@@ -5,7 +5,7 @@ cd ${DIR}
 
 ARCH=$(uname -m)
 DOWNLOAD_URL=https://github.com/syncloud/3rdparty/releases/download/
-LDAP_VERSION=15.0.0.0
+LDAP_VERSION=16.0.0.0
 
 BUILD_DIR=${DIR}/build/snap
 mkdir -p $BUILD_DIR
