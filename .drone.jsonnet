@@ -29,7 +29,6 @@ local build(arch, test_ui, dind) = [{
         name: "build ldap plugin",
         image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim",
         commands: [
-            "apt update && apt install tree",
             "cd build/jellyfin-plugin-ldapauth-master",
             "dotnet publish -c Release -o out" ,
             "tree"
