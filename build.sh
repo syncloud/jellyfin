@@ -31,5 +31,6 @@ rm -rf app.tar
 #custom binary
 mkdir -p $BUILD_DIR/plugins
 tar xf $DIR/build/LDAP-Auth.tar.gz -C $BUILD_DIR/plugins
+cp $DIR/config/jellyfin/meta.json $BUILD_DIR/plugins/LDAP-Auth
 
 ls -la $BUILD_DIR/plugins/LDAP-Auth
