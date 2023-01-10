@@ -26,20 +26,6 @@ local build(arch, test_ui, dind) = [{
         ]
     },
     {
-        name: "build ldap plugin",
-        image: "mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim",
-        commands: [
-            "cd build/jellyfin-plugin-ldapauth-master",
-            "dotnet publish -c Release -o out"
-        ],
-        volumes: [
-            {
-                name: "shm",
-                path: "/dev/shm"
-            }
-        ]
-    },
-    {
         name: "build",
         image: "docker:" + dind,
         commands: [
