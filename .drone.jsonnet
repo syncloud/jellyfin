@@ -1,8 +1,8 @@
 local name = "jellyfin";
-local version = "10.7.7";
+local version = "10.8.8";
 local browser = "firefox";
 
-local build(arch, test_ui) = [{
+local build(arch, test_ui, dind) = [{
     kind: "pipeline",
     type: "docker",
     name: arch,
@@ -25,54 +25,30 @@ local build(arch, test_ui) = [{
             "./download.sh "
         ]
     },
-    //{
-    //    name: "build ldap plugin",
-    //    image: "mcr.microsoft.com/dotnet/sdk:5.0-buster-slim",
-    //    commands: [
-    //        "apt update && apt install tree",
-    //        "cd build/jellyfin-plugin-ldapauth-memberuid",
-    //        "dotnet publish -c Release -o out" ,
-    //        "tree"
-    //    ],
-    //    volumes: [
-    //        {
-    //            name: "shm",
-    //            path: "/dev/shm"
-    //        }
-    //    ]
-    //},
     {
         name: "build",
-        image: "debian:buster-slim",
+        image: "docker:" + dind,
         commands: [
             "./build.sh " + version
         ],
         volumes: [
             {
-                name: "docker",
-                path: "/usr/bin/docker"
-            },
-            {
-               name: "docker.sock",
-               path: "/var/run/docker.sock"
-            }
+                    name: "dockersock",
+                    path: "/var/run"
+                }
         ]
     },
     {
         name: "package python",
-        image: "debian:buster-slim",
+        image: "docker:" + dind,
         commands: [
             "./python/build.sh"
         ],
         volumes: [
             {
-                name: "docker",
-                path: "/usr/bin/docker"
-            },
-            {
-                name: "docker.sock",
-                path: "/var/run/docker.sock"
-            }
+                    name: "dockersock",
+                    path: "/var/run"
+                }
         ]
     },
     {
@@ -82,18 +58,7 @@ local build(arch, test_ui) = [{
             "VERSION=$(cat version)",
             "./package.sh " + name + " $VERSION "
         ]
-    }
-    ] + ( if arch == "amd64" then [
-    {
-        name: "test-integration-jessie",
-        image: "python:3.8-slim-buster",
-        commands: [
-          "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
-          "cd integration",
-          "./deps.sh",
-          "py.test -x -s verify.py --distro=jessie --domain=jessie.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".jessie.com --app=" + name
-        ]
-    }] else []) + [
+    },
     {
         name: "test-integration-buster",
         image: "python:3.8-slim-buster",
@@ -109,45 +74,19 @@ local build(arch, test_ui) = [{
         image: "selenium/video:ffmpeg-4.3.1-20220208",
         detach: true,
         environment: {
-            "DISPLAY_CONTAINER_NAME": "selenium",
-            "PRESET": "-preset ultrafast -movflags faststart"
-        },
-        volumes: [
+                DISPLAY_CONTAINER_NAME: "selenium",
+                FILE_NAME: "video.mkv"
+            },
+            volumes: [
             {
                 name: "shm",
                 path: "/dev/shm"
             },
-           {
+            {
                 name: "videos",
                 path: "/videos"
             }
-        ]
-    },
-    {
-        name: "test-ui-desktop-jessie",
-        image: "python:3.8-slim-buster",
-        commands: [
-          "cd integration",
-          "./deps.sh",
-          "py.test -x -s test-ui.py --distro=jessie --ui-mode=desktop --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
-        ],
-        volumes: [{
-            name: "shm",
-            path: "/dev/shm"
-        }]
-    },
-    {
-        name: "test-ui-mobile-jessie",
-        image: "python:3.8-slim-buster",
-        commands: [
-          "cd integration",
-          "./deps.sh",
-          "py.test -x -s test-ui.py --distro=jessie --ui-mode=mobile --domain=jessie.com --device-host=" + name + ".jessie.com --app=" + name + " --browser=" + browser,
-        ],
-        volumes: [{
-            name: "shm",
-            path: "/dev/shm"
-        }]
+]
     },
     {
         name: "test-ui-desktop-buster",
@@ -208,7 +147,7 @@ local build(arch, test_ui) = [{
     },
     {
         name: "artifact",
-        image: "appleboy/drone-scp:1.6.2",
+        image: "appleboy/drone-scp:1.6.4",
         settings: {
             host: {
                 from_secret: "artifact_host"
@@ -243,22 +182,18 @@ local build(arch, test_ui) = [{
         "pull_request"
       ]
     },
-    services: ( if arch == "amd64" then [
-        {
-            name: name + ".jessie.com",
-            image: "syncloud/platform-jessie-" + arch,
-            privileged: true,
-            volumes: [
-                {
-                    name: "dbus",
-                    path: "/var/run/dbus"
-                },
-                {
-                    name: "dev",
-                    path: "/dev"
-                }
-            ]
-        }] else []) + [
+    services:  [
+{
+                name: "docker",
+                image: "docker:" + dind,
+                privileged: true,
+                volumes: [
+                    {
+                        name: "dockersock",
+                        path: "/var/run"
+                    }
+                ]
+            },
         {
             name: name + ".buster.com",
             image: "syncloud/platform-buster-" + arch + ":22.01",
@@ -309,17 +244,9 @@ local build(arch, test_ui) = [{
             temp: {}
         },
         {
-            name: "docker",
-            host: {
-                path: "/usr/bin/docker"
-            }
-        },
-        {
-            name: "docker.sock",
-            host: {
-                path: "/var/run/docker.sock"
-            }
-        }
+                name: "dockersock",
+                temp: {}
+            },
     ]
 },
 {
@@ -357,6 +284,6 @@ local build(arch, test_ui) = [{
      }
  }];
 
-build("amd64", true) + 
-build("arm64", false) +
-build("arm", false)
+build("amd64", true, "20.10.21-dind") +
+build("arm64", false, "19.03.8-dind") +
+build("arm", false, "19.03.8-dind")
