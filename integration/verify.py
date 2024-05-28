@@ -4,6 +4,7 @@ from subprocess import check_output
 
 import pytest
 import requests
+import time
 from syncloudlib.integration.hosts import add_host_alias
 from syncloudlib.integration.installer import local_install, wait_for_installer
 
@@ -46,7 +47,7 @@ def test_start(module_setup, device, app, domain, device_host):
 
 
 def test_activate_device(device):
-    response = device.activate_custom()
+    response = retry(device.activate_custom, 1)
     assert response.status_code == 200, response.text
 
 
@@ -69,3 +70,19 @@ def test_ffprobe(device, app_dir, data_dir):
 def test_storage_change(device, app_dir, data_dir):
     device.run_ssh('snap run jellyfin.storage-change > {1}/log/storage-change.log'.format(app_dir, data_dir),
                    throw=False)
+
+
+def retry(method, retries=10):
+    attempt = 0
+    exception = None
+    while attempt < retries:
+        try:
+            return method()
+        except Exception as e:
+            exception = e
+            print('error (attempt {0}/{1}): {2}'.format(attempt + 1, retries, str(e)))
+            time.sleep(5)
+        attempt += 1
+    raise exception
+
+
