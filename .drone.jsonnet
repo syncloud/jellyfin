@@ -1,5 +1,5 @@
 local name = "jellyfin";
-local version = "10.8.8";
+local version = "10.9.3";
 local browser = "firefox";
 
 local build(arch, test_ui, dind) = [{
