@@ -22,7 +22,7 @@ docker export app -o app.tar
 tar xf app.tar
 rm -rf app.tar
 ARCH_DIR=$(dirname usr/lib/*/ld*.so.*)
-ln -s /jellyfin/jellyfin.dll $ARCH_DIR/jellyfin.dll
+ln -s /snap/jellyfin/current/app/jellyfin/jellyfin.dll $ARCH_DIR/jellyfin.dll
 ls -la $ARCH_DIR/jellyfin.dll
 
 #rm -rf $BUILD_DIR/plugins/LDAP-Auth
