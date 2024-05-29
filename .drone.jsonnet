@@ -1,6 +1,7 @@
 local name = "jellyfin";
 local version = "10.9.3";
 local browser = "firefox";
+local selenium = '4.21.0-20240517';
 local deployer = 'https://github.com/syncloud/store/releases/download/4/syncloud-release';
 
 
@@ -71,6 +72,26 @@ local build(arch, test_ui, dind) = [{
           "py.test -x -s test.py --distro=buster --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --arch=" + arch
         ]
     }] + ( if test_ui then [
+{
+            name: "selenium",
+            image: "selenium/standalone-" + browser + ":" + selenium,
+            detach: true,
+            environment: {
+                SE_NODE_SESSION_TIMEOUT: "999999",
+                START_XVFB: "true"
+            },
+               volumes: [{
+                name: "shm",
+                path: "/dev/shm"
+            }],
+            commands: [
+                "cat /etc/hosts",
+                "getent hosts " + name + ".buster.com | sed 's/" + name +".buster.com/auth.buster.com/g' | sudo tee -a /etc/hosts",
+                "cat /etc/hosts",
+                "/opt/bin/entry_point.sh"
+            ]
+         },
+
     {
         name: "selenium-video",
         image: "selenium/video:ffmpeg-4.3.1-20220208",
@@ -232,19 +253,7 @@ local build(arch, test_ui, dind) = [{
                 }
             ]
         }
-    ] + ( if test_ui then [
-        {
-            name: "selenium",
-            image: "selenium/standalone-" + browser + ":4.1.2-20220208",
-            environment: {
-                SE_NODE_SESSION_TIMEOUT: "999999"
-            },
-            volumes: [{
-                name: "shm",
-                path: "/dev/shm"
-            }]
-        }
-    ] else [] ),
+    ],
     volumes: [
         {
             name: "dbus",
