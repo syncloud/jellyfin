@@ -62,13 +62,13 @@ local build(arch, test_ui, dind) = [{
         ]
     },
     {
-        name: "test-integration",
+        name: "test",
         image: "python:3.8-slim-buster",
         commands: [
           "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
-          "cd integration",
+          "cd tet",
           "./deps.sh",
-          "py.test -x -s verify.py --distro=buster --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --arch=" + arch
+          "py.test -x -s test.py --distro=buster --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --arch=" + arch
         ]
     }] + ( if test_ui then [
     {
@@ -95,9 +95,9 @@ local build(arch, test_ui, dind) = [{
         image: "python:3.8-slim-buster",
         commands: [
           "apt-get update && apt-get install -y sshpass openssh-client libxml2-dev libxslt-dev build-essential libz-dev curl",
-          "cd integration",
+          "cd test",
           "pip install -r requirements.txt",
-          "py.test -x -s test-ui.py --distro=buster --ui-mode=desktop --domain=buster.com --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
+          "py.test -x -s ui.py --distro=buster --ui-mode=desktop --domain=buster.com --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
         ]
     }
      ] else [] ) +
@@ -107,7 +107,7 @@ local build(arch, test_ui, dind) = [{
         image: "python:3.8-slim-buster",
         commands: [
           "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
-          "cd integration",
+          "cd test",
           "./deps.sh",
           "py.test -x -s test-upgrade.py --distro=buster --ui-mode=desktop --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
         ],
