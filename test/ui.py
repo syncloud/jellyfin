@@ -5,7 +5,7 @@ from syncloudlib.integration.hosts import add_host_alias
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-from integration.lib import login
+from test.lib import login
 
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud/ui'
