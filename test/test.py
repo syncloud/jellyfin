@@ -41,7 +41,7 @@ def module_setup(device, request, data_dir, platform_data_dir, artifact_dir):
 
 def test_start(module_setup, device, app, domain, device_host):
     add_host_alias(app, device_host, domain)
-    device.run_ssh('date', retries=100, throw=True)
+    device.run_ssh('date', retries=10, throw=True)
     device.run_ssh('mkdir {0}'.format(TMP_DIR))
  
 
@@ -83,4 +83,5 @@ def retry(method, retries=10):
             time.sleep(5)
         attempt += 1
     raise exception
+
 
