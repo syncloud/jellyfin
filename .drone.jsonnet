@@ -1,6 +1,7 @@
 local name = "jellyfin";
 local version = "10.9.3";
 local browser = "firefox";
+local platform = '22.02';
 local selenium = '4.21.0-20240517';
 local deployer = 'https://github.com/syncloud/store/releases/download/4/syncloud-release';
 
@@ -240,7 +241,7 @@ local build(arch, test_ui, dind) = [{
             },
         {
             name: name + ".buster.com",
-            image: "syncloud/platform-buster-" + arch + ":22.01",
+            image: "syncloud/platform-buster-" + arch + platform,
             privileged: true,
             volumes: [
                 {
