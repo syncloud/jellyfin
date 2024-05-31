@@ -70,7 +70,7 @@ local build(arch, test_ui, dind) = [{
           "APP_ARCHIVE_PATH=$(realpath $(cat package.name))",
           "cd test",
           "./deps.sh",
-          "py.test -x -s test.py --distro=buster --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --arch=" + arch
+          "py.test -xvs test.py --distro=buster --domain=buster.com --app-archive-path=$APP_ARCHIVE_PATH --device-host=" + name + ".buster.com --app=" + name + " --arch=" + arch
         ]
     }] + ( if test_ui then [
 {
@@ -286,3 +286,4 @@ local build(arch, test_ui, dind) = [{
 build("amd64", true, "20.10.21-dind") +
 build("arm64", false, "19.03.8-dind") +
 build("arm", false, "19.03.8-dind")
+
