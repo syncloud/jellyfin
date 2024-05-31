@@ -34,6 +34,6 @@ def test_login(selenium, device_user, device_password):
 
 
 def test_admin(selenium):
-    selenium.clickable_by(By.CSS_SELECTOR,"span.material-icons.menu")
-    selenium.clickable_by(By.CSS_SELECTOR, "span.navMenuOptionIcon.dashboard")
+    selenium.clickable_by(By.CSS_SELECTOR,"span.material-icons.menu").click()
+    selenium.clickable_by(By.CSS_SELECTOR, "span.navMenuOptionIcon.dashboard").click()
     selenium.find_by(By.XPATH, "//span[text()='Scan All Libraries']")
