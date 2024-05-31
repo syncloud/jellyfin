@@ -18,6 +18,7 @@ def module_setup(request, device, artifact_dir, ui_mode, selenium):
         device.run_ssh('mkdir -p {0}'.format(TMP_DIR), throw=False)
         device.run_ssh('journalctl > {0}/journalctl.log'.format(TMP_DIR, ui_mode), throw=False)
         device.scp_from_device('{0}/*'.format(TMP_DIR), join(artifact_dir, ui_mode))
+        check_output('cp /videos/* {0}'.format(artifact_dir), shell=True)
         check_output('chmod -R a+r {0}'.format(artifact_dir), shell=True)
         selenium.log()
 
