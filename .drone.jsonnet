@@ -1,6 +1,6 @@
 local name = "jellyfin";
 local version = "10.9.3";
-local browser = "firefox";
+local browser = "chrome";
 local platform = '22.02';
 local selenium = '4.21.0-20240517';
 local deployer = 'https://github.com/syncloud/store/releases/download/4/syncloud-release';
@@ -286,4 +286,5 @@ local build(arch, test_ui, dind) = [{
 build("amd64", true, "20.10.21-dind") +
 build("arm64", false, "19.03.8-dind") +
 build("arm", false, "19.03.8-dind")
+
 
