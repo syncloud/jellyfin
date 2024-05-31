@@ -120,7 +120,11 @@ local build(arch, test_ui, dind) = [{
           "cd test",
           "pip install -r requirements.txt",
           "py.test -x -s ui.py --distro=buster --ui-mode=desktop --domain=buster.com --device-host=" + name + ".buster.com --app=" + name + " --browser=" + browser,
-        ]
+        ],
+            volumes: [{
+                name: "videos",
+                path: "/videos"
+            }]
     }
      ] else [] ) +
    ( if arch == "amd64" then [
