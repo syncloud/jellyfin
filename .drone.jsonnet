@@ -241,7 +241,7 @@ local build(arch, test_ui, dind) = [{
             },
         {
             name: name + ".buster.com",
-            image: "syncloud/platform-buster-" + arch + platform,
+            image: "syncloud/platform-buster-" + arch + ":" + platform,
             privileged: true,
             volumes: [
                 {
