@@ -105,4 +105,3 @@ class Installer:
 
     def prepare_storage(self):
         return storage.init_storage(APP_NAME, USER_NAME)
-E)
