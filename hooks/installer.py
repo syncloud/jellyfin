@@ -11,11 +11,13 @@ from syncloudlib import fs, linux, gen, logger
 from syncloudlib.application import urls, storage
 from syncloudlib.http import wait_for_rest
 import re
+import requests_unixsocket
 
 APP_NAME = 'jellyfin'
 USER_NAME = 'jellyfin'
-PORT = 8096
-REST_URL = "http://localhost:{0}".format(PORT)
+
+SOCKET_FILE = '/var/snap/jellyfin/current/socket'
+SOCKET = 'http+unix://{0}'.format(socket_file.replace('/', '%2F'))
 
 
 class Installer:
@@ -92,8 +94,9 @@ class Installer:
     def _install(self):
         self.log.info('configure install') 
         app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
-        wait_for_rest(requests.session(), REST_URL, 200, 100)
-        requests.post("{0}/Startup/Complete".format(REST_URL))
+        session = requests_unixsocket.Session()
+        wait_for_rest(session, SOCKET, 200, 100)
+        session.post("{0}/Startup/Complete".format(SOCKET))
         with open(self.install_file, 'w') as f:
             f.write('installed\n')
 
@@ -102,3 +105,4 @@ class Installer:
 
     def prepare_storage(self):
         return storage.init_storage(APP_NAME, USER_NAME)
+E)
