@@ -17,7 +17,7 @@ APP_NAME = 'jellyfin'
 USER_NAME = 'jellyfin'
 
 SOCKET_FILE = '/var/snap/jellyfin/current/socket'
-SOCKET = 'http+unix://{0}'.format(socket_file.replace('/', '%2F'))
+SOCKET = 'http+unix://{0}'.format(SOCKET_FILE.replace('/', '%2F'))
 
 
 class Installer:
