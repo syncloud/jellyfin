@@ -1,21 +1,19 @@
-import json
 import logging
-import time
-import uuid
+import shutil
 from os import path
 from os.path import join
 from subprocess import check_output, CalledProcessError
-import shutil
-import requests
+
+import requests_unixsocket
 from syncloudlib import fs, linux, gen, logger
 from syncloudlib.application import urls, storage
 from syncloudlib.http import wait_for_rest
-import re
 
 APP_NAME = 'jellyfin'
 USER_NAME = 'jellyfin'
-PORT = 8096
-REST_URL = "http://localhost:{0}".format(PORT)
+
+SOCKET_FILE = '/var/snap/jellyfin/current/socket'
+SOCKET = 'http+unix://{0}'.format(SOCKET_FILE.replace('/', '%2F'))
 
 
 class Installer:
@@ -29,13 +27,13 @@ class Installer:
         self.common_dir = '/var/snap/jellyfin/common'
         self.app_url = urls.get_app_url(APP_NAME)
         self.install_file = join(self.common_dir, 'installed')
-         
+
     def pre_refresh(self):
         self.log.info('pre refresh')
 
     def post_refresh(self):
         self.log.info('post refresh')
-        #self.init_config()
+        # self.init_config()
 
     def install(self):
         self.log.info('install')
@@ -48,11 +46,12 @@ class Installer:
         fs.makepath(log_dir)
         fs.makepath(join(self.data_dir, 'nginx'))
         fs.makepath(join(self.data_dir, 'data'))
-        
+
         fs.makepath(join(self.data_dir, 'data', 'plugins'))
         fs.makepath(join(self.data_dir, 'cache'))
         fs.makepath(join(self.data_dir, 'config'))
-        shutil.copytree(join(self.snap_dir, 'app', 'plugins', 'LDAP-Auth'), join(self.data_dir, 'data', 'plugins', 'LDAP-Auth'))
+        shutil.copytree(join(self.snap_dir, 'app', 'plugins', 'LDAP-Auth'),
+                        join(self.data_dir, 'data', 'plugins', 'LDAP-Auth'))
         self.refresh_config()
         self.prepare_storage()
 
@@ -62,8 +61,10 @@ class Installer:
             'local_ipv4': self.local_ipv4(),
             'ipv6': self.ipv6()
         }
-        gen.generate_files(join(self.snap_dir, 'config', 'jellyfin', 'config'), join(self.data_dir, 'config'), variables)
-        shutil.copytree(join(self.snap_dir, 'config', 'jellyfin', 'plugins'), join(self.data_dir, 'data', 'plugins'), dirs_exist_ok=True)
+        gen.generate_files(join(self.snap_dir, 'config', 'jellyfin', 'config'), join(self.data_dir, 'config'),
+                           variables)
+        shutil.copytree(join(self.snap_dir, 'config', 'jellyfin', 'plugins'), join(self.data_dir, 'data', 'plugins'),
+                        dirs_exist_ok=True)
         fs.chownpath(self.data_dir, USER_NAME, recursive=True)
         fs.chownpath(self.common_dir, USER_NAME, recursive=True)
 
@@ -85,15 +86,16 @@ class Installer:
             self._upgrade()
         else:
             self._install()
-     
+
     def _upgrade(self):
         self.log.info('configure upgrade')
 
     def _install(self):
-        self.log.info('configure install') 
+        self.log.info('configure install')
         app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
-        wait_for_rest(requests.session(), REST_URL, 200, 100)
-        requests.post("{0}/Startup/Complete".format(REST_URL))
+        session = requests_unixsocket.Session()
+        wait_for_rest(session, "{0}/web/".format(SOCKET), 200, 10)
+        session.post("{0}/Startup/Complete".format(SOCKET))
         with open(self.install_file, 'w') as f:
             f.write('installed\n')
 
@@ -102,3 +104,4 @@ class Installer:
 
     def prepare_storage(self):
         return storage.init_storage(APP_NAME, USER_NAME)
+
