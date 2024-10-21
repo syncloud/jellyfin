@@ -221,7 +221,8 @@ local build(arch, test_ui, dind) = [{
             ]
         },
         when: {
-          status: [ "failure", "success" ]
+          status: [ "failure", "success" ],
+          event: [ "push" ]
         }
     }
     ],
