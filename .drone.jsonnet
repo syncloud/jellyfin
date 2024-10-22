@@ -1,5 +1,5 @@
 local name = "jellyfin";
-local version = "10.9.3";
+local version = "10.9.11";
 local browser = "chrome";
 local platform = '22.02';
 local selenium = '4.21.0-20240517';
@@ -221,7 +221,8 @@ local build(arch, test_ui, dind) = [{
             ]
         },
         when: {
-          status: [ "failure", "success" ]
+          status: [ "failure", "success" ],
+          event: [ "push" ]
         }
     }
     ],
