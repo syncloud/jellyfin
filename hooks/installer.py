@@ -95,7 +95,10 @@ class Installer:
         app_storage_dir = storage.init_storage(APP_NAME, USER_NAME)
         session = requests_unixsocket.Session()
         wait_for_rest(session, "{0}/web/".format(SOCKET), 200, 10)
-        session.post("{0}/Startup/Complete".format(SOCKET))
+        response = session.post("{0}/Startup/Complete".format(SOCKET))
+        if response.status_code != 200:
+            raise Exception(response.text)
+
         with open(self.install_file, 'w') as f:
             f.write('installed\n')
 
