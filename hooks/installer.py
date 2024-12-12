@@ -1,5 +1,6 @@
 import logging
 import shutil
+import time
 from os import path
 from os.path import join
 from subprocess import check_output, CalledProcessError
@@ -109,6 +110,7 @@ class Installer:
             error = response.text
             if response.status_code == 200:
                 return
+            time.sleep(10)
 
         raise Exception(error)
 
