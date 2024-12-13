@@ -107,7 +107,7 @@ class Installer:
         while attempt < 20:
             attempt += 1
             response = session.post("{0}/Startup/Complete".format(SOCKET))
-            error = response.status_code + ': ' + response.text
+            error = str(response.status_code) + ': ' + response.text
             if response.status_code == 204:
                 return
             time.sleep(10)
