@@ -1,6 +1,6 @@
 apps:
   server:
-    command: bin/service.server.sh start
+    command: bin/service.server.sh
     user: jellyfin
     daemon: simple
     plugs:
@@ -9,15 +9,13 @@ apps:
     restart-condition: always
     start-timeout: 2000s
   nginx:
-    command: bin/service.nginx.sh start
+    command: bin/service.nginx.sh
     user: jellyfin
     daemon: simple
     plugs:
     - network
     - network-bind
     restart-condition: always
-    stop-command: bin/service.nginx.sh stop
-    reload-command: bin/service.nginx.sh reload
     start-timeout: 2000s
 
   storage-change:
