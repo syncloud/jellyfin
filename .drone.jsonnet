@@ -1,5 +1,5 @@
 local name = "jellyfin";
-local version = "10.10.3";
+local version = "10.10.7";
 local browser = "chrome";
 local platform = '22.02';
 local selenium = '4.21.0-20240517';
