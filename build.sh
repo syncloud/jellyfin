@@ -22,6 +22,6 @@ ls -la $ARCH_DIR/jellyfin.dll
 curl https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_${LDAP_VERSION}.zip -o ${DIR}/build/ldap-authentication.zip
 mkdir -p $BUILD_DIR/plugins/LDAP-Auth
 cd $BUILD_DIR/plugins/LDAP-Auth
-gunzip ${DIR}/build/ldap-authentication.zip
+gunzip -d ${DIR}/build/ldap-authentication.zip
 
 ls -la $BUILD_DIR/plugins/LDAP-Auth
