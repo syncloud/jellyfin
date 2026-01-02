@@ -6,7 +6,8 @@ cd ${DIR}
 LDAP_VERSION=$1
 
 BUILD_DIR=${DIR}/build/snap/app
-
+apt update
+apt install -y unzio
 mkdir -p ${BUILD_DIR}
 echo $VERSION > $BUILD_DIR/app.version
 cd ${BUILD_DIR}
@@ -21,7 +22,7 @@ ls -la $ARCH_DIR/jellyfin.dll
 
 curl https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_${LDAP_VERSION}.zip -o ${DIR}/build/ldap-authentication.zip
 mkdir -p $BUILD_DIR/plugins/LDAP-Auth
-cd $BUILD_DIR/plugins/LDAP-Auth
-gunzip -d ${DIR}/build/ldap-authentication.zip
+
+unzip ${DIR}/build/ldap-authentication.zip -d $BUILD_DIR/plugins/LDAP-Auth
 
 ls -la $BUILD_DIR/plugins/LDAP-Auth
