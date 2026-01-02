@@ -19,8 +19,9 @@ ARCH_DIR=$(dirname usr/lib/*/ld*.so.*)
 ln -s /snap/jellyfin/current/app/jellyfin/jellyfin.dll $ARCH_DIR/jellyfin.dll
 ls -la $ARCH_DIR/jellyfin.dll
 
-wget -c --progress=dot:giga https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_${LDAP_VERSION}.zip -O ${DIR}/build/ldap-authentication.zip
+curl https://repo.jellyfin.org/releases/plugin/ldap-authentication/ldap-authentication_${LDAP_VERSION}.zip -o ${DIR}/build/ldap-authentication.zip
 mkdir -p $BUILD_DIR/plugins/LDAP-Auth
-unzip ${DIR}/build/ldap-authentication.zip -d $BUILD_DIR/plugins/LDAP-Auth
+cd $BUILD_DIR/plugins/LDAP-Auth
+unzip ${DIR}/build/ldap-authentication.zip
 
 ls -la $BUILD_DIR/plugins/LDAP-Auth
