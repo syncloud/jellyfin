@@ -7,7 +7,7 @@ LDAP_VERSION=$1
 
 BUILD_DIR=${DIR}/build/snap/app
 apt update
-apt install -y unzio
+apt install -y unzip
 mkdir -p ${BUILD_DIR}
 echo $VERSION > $BUILD_DIR/app.version
 cd ${BUILD_DIR}
