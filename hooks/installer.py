@@ -34,7 +34,7 @@ class Installer:
 
     def post_refresh(self):
         self.log.info('post refresh')
-        self.copy_auth_plugin()
+        self.link_auth_plugin()
 
     def install(self):
         self.log.info('install')
@@ -51,17 +51,24 @@ class Installer:
         fs.makepath(join(self.data_dir, 'data', 'plugins'))
         fs.makepath(join(self.data_dir, 'cache'))
         fs.makepath(join(self.data_dir, 'config'))
-        self.copy_auth_plugin()
+        self.link_auth_plugin()
 
         self.refresh_config()
         self.prepare_storage()
 
-    def copy_auth_plugin(self):
+    def link_auth_plugin(self):
 
-        shutil.copytree(
-            join(self.snap_dir, 'app', 'plugins', 'LDAP-Auth'),
-            join(self.data_dir, 'data', 'plugins', 'LDAP-Auth')
-        )
+        src_dir = join(self.snap_dir, 'app', 'plugins', 'LDAP-Auth')
+        dst_dir = join(self.data_dir, 'data', 'plugins', 'LDAP-Auth')
+
+        if os.path.exists(dst_dir):
+            if os.path.islink(dst_dir):
+                os.unlink(dst_dir)
+            else:
+                shutil.rmtree(dst_dir)
+
+        os.makedirs(os.path.dirname(dst_dir), exist_ok=True)
+        os.symlink(src_dir, dst_dir)
 
     def refresh_config(self):
         variables = {
@@ -126,3 +133,4 @@ class Installer:
 
     def prepare_storage(self):
         return storage.init_storage(APP_NAME, USER_NAME)
+
