@@ -1,6 +1,6 @@
 local name = "jellyfin";
 local version = "10.11.5";
-local ldap_version = "22.0.0.0";
+local ldap_version = "19.0.0.0";
 local browser = "chrome";
 local nginx = '1.29.3-alpine3.22';
 local debian = 'bookworm-slim';
