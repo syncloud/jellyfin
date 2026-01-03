@@ -89,7 +89,20 @@ func (j *Jellyfin) UpdateAuthPlugin() error {
 		return err
 	}
 
-	return cp.Copy(srcDir, dstDir)
+	err = cp.Copy(srcDir, dstDir)
+	if err != nil {
+		return err
+	}
+
+	err = cp.Copy(
+		path.Join(j.appDir, "config", "jellyfin", "plugins"),
+		path.Join(j.dataDir, "data", "plugins"),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (j *Jellyfin) LocalIPv4() string {
