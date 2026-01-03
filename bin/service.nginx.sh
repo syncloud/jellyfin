@@ -1,6 +1,6 @@
 #!/bin/bash -e
 /bin/rm -f $SNAP_COMMON/web.socket
 exec $SNAP/nginx/bin/nginx.sh \
-  -c $SNAP/config/nginx.conf \
+  -c $SNAP_DATA/config/nginx.conf \
   -p $SNAP/nginx \
   -e stderr

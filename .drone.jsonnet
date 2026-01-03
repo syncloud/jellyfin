@@ -1,35 +1,48 @@
-local name = "jellyfin";
-local version = "10.11.5";
-local ldap_version = "22.0.0.0";
-local browser = "chrome";
+local name = 'jellyfin';
+local version = '10.11.5';
+local ldap_version = '22.0.0.0';
+local browser = 'chrome';
 local nginx = '1.29.3-alpine3.22';
 local debian = 'bookworm-slim';
-local alpine = '3.22.2';
 local platform = '25.09';
 local selenium = '4.35.0-20250828';
 local deployer = 'https://github.com/syncloud/store/releases/download/4/syncloud-release';
 local python = '3.12-slim-bookworm';
+local go = '1.25';
 local distro_default = 'bookworm';
 local distros = ['bookworm'];
 
 
-local build(arch, test_ui, dind) = [{
-    kind: "pipeline",
-    type: "docker",
+local build(arch, test_ui, dind) = [
+  {
+    kind: 'pipeline',
+    type: 'docker',
     name: arch,
     platform: {
-        os: "linux",
-        arch: arch
+      os: 'linux',
+      arch: arch,
     },
     steps: [
-   {
+             {
                name: 'version',
                image: 'debian:' + debian,
                commands: [
                  'echo $DRONE_BUILD_NUMBER > version',
                ],
              },
-    {
+             {
+               name: 'cli',
+               image: 'golang:' + go,
+               commands: [
+                 'cd cli',
+                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/install ./cmd/install',
+                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/configure ./cmd/configure',
+                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/pre-refresh ./cmd/pre-refresh',
+                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/post-refresh ./cmd/post-refresh',
+                 'CGO_ENABLED=0 go build -o ../build/snap/bin/cli ./cmd/cli',
+               ],
+             },
+             {
                name: 'nginx',
                image: 'nginx:' + nginx,
                commands: [
@@ -43,35 +56,22 @@ local build(arch, test_ui, dind) = [{
                  './nginx/test.sh',
                ],
              },
-    {
-        name: "build",
-        image: "jellyfin/jellyfin:" + version,
-        commands: [
-            "./build.sh " + ldap_version
-        ]
-    },
-    {
-        name: "package python",
-        image: "docker:" + dind,
-        commands: [
-            "./python/build.sh"
-        ],
-        volumes: [
-            {
-                    name: "dockersock",
-                    path: "/var/run"
-                }
-        ]
-    },
-    {
-        name: "package",
-        image: 'debian:' + debian,
-        commands: [
-            "VERSION=$(cat version)",
-            "./package.sh " + name + " $VERSION "
-        ]
-    },
-    ] + [
+             {
+               name: 'build',
+               image: 'jellyfin/jellyfin:' + version,
+               commands: [
+                 './build.sh ' + ldap_version,
+               ],
+             },
+             {
+               name: 'package',
+               image: 'debian:' + debian,
+               commands: [
+                 'VERSION=$(cat version)',
+                 './package.sh ' + name + ' $VERSION ',
+               ],
+             },
+           ] + [
              {
                name: 'test ' + distro,
                image: 'python:' + python,
