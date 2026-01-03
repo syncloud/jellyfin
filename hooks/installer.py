@@ -1,6 +1,7 @@
 import logging
 import shutil
 import time
+import os
 from os import path
 from os.path import join
 from subprocess import check_output, CalledProcessError
