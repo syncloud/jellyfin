@@ -220,7 +220,7 @@ func (i *Installer) UpdateConfigs() error {
 		return err
 	}
 
-	err = i.jellyfin.LinkAuthPlugin()
+	err = i.jellyfin.UpdateAuthPlugin()
 	if err != nil {
 		return err
 	}

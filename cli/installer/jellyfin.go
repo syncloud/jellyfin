@@ -10,6 +10,8 @@ import (
 	"strings"
 	"time"
 
+	cp "github.com/otiai10/copy"
+
 	"go.uber.org/zap"
 )
 
@@ -78,35 +80,16 @@ func (j *Jellyfin) Complete() error {
 	return fmt.Errorf("failed to complete startup: %s", lastError)
 }
 
-func (j *Jellyfin) LinkAuthPlugin() error {
+func (j *Jellyfin) UpdateAuthPlugin() error {
 	srcDir := path.Join(j.appDir, "app", "plugins", "LDAP-Auth")
 	dstDir := path.Join(j.dataDir, "data", "plugins", "LDAP-Auth")
 
-	_, err := os.Lstat(dstDir)
-	if err == nil {
-		fileInfo, err := os.Lstat(dstDir)
-		if err != nil {
-			return err
-		}
-		if fileInfo.Mode()&os.ModeSymlink != 0 {
-			err = os.Remove(dstDir)
-			if err != nil {
-				return err
-			}
-		} else {
-			err = os.RemoveAll(dstDir)
-			if err != nil {
-				return err
-			}
-		}
-	}
-
-	err = os.MkdirAll(path.Dir(dstDir), 0755)
+	err := os.RemoveAll(dstDir)
 	if err != nil {
 		return err
 	}
 
-	return os.Symlink(srcDir, dstDir)
+	return cp.Copy(srcDir, dstDir)
 }
 
 func (j *Jellyfin) LocalIPv4() string {
