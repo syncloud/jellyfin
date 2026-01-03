@@ -60,7 +60,7 @@ func New(logger *zap.Logger) *Installer {
 		appDir:             appDir,
 		dataDir:            dataDir,
 		commonDir:          commonDir,
-		jellyfin:           NewJellyfin(appDir, dataDir, executor),
+		jellyfin:           NewJellyfin(appDir, dataDir, executor, logger),
 		logger:             logger,
 	}
 }

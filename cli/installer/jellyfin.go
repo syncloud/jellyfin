@@ -17,9 +17,10 @@ type Jellyfin struct {
 	appDir, dataDir string
 	client          *http.Client
 	executor        *Executor
+	logger          *zap.Logger
 }
 
-func NewJellyfin(appDir, dataDir string, executor *Executor) *Jellyfin {
+func NewJellyfin(appDir, dataDir string, executor *Executor, logger *zap.Logger) *Jellyfin {
 	return &Jellyfin{
 		appDir:  appDir,
 		dataDir: dataDir,
@@ -31,6 +32,7 @@ func NewJellyfin(appDir, dataDir string, executor *Executor) *Jellyfin {
 			},
 		},
 		executor: executor,
+		logger:   logger,
 	}
 }
 
@@ -108,18 +110,18 @@ func (j *Jellyfin) LinkAuthPlugin() error {
 }
 
 func (j *Jellyfin) LocalIPv4() string {
-	output, err := i.executor.Run("/snap/platform/current/bin/cli", "ipv4")
+	output, err := j.executor.Run("/snap/platform/current/bin/cli", "ipv4")
 	if err != nil {
-		i.logger.Error("failed to get local ipv4", zap.Error(err))
+		j.logger.Error("failed to get local ipv4", zap.Error(err))
 		return "localhost"
 	}
 	return strings.TrimSpace(output)
 }
 
 func (j *Jellyfin) IPv6() string {
-	output, err := i.executor.Run("/snap/platform/current/bin/cli", "ipv6")
+	output, err := j.executor.Run("/snap/platform/current/bin/cli", "ipv6")
 	if err != nil {
-		i.logger.Error("failed to get ipv6", zap.Error(err))
+		j.logger.Error("failed to get ipv6", zap.Error(err))
 		return "localhost"
 	}
 	return strings.TrimSpace(output)
