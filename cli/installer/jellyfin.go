@@ -42,7 +42,7 @@ func (j *Jellyfin) Complete() error {
 
 	// Wait for REST endpoint to be available
 	webURL := "http://unix/web/"
-	maxWebAttempts := 10
+	maxWebAttempts := 20
 	for attempt := 0; attempt < maxWebAttempts; attempt++ {
 		resp, err := j.client.Get(webURL)
 		if err == nil && resp.StatusCode == 200 {
@@ -55,7 +55,7 @@ func (j *Jellyfin) Complete() error {
 		if attempt == maxWebAttempts-1 {
 			return fmt.Errorf("web endpoint not available after %d attempts", maxWebAttempts)
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(10 * time.Second)
 	}
 
 	// Complete startup wizard
