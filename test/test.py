@@ -52,10 +52,12 @@ def test_activate_device(device):
 
 def test_install(app_archive_path, device_host, device_password):
     local_install(device_host, device_password, app_archive_path)
+    wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
     
 
 def test_reinstall(app_archive_path, device_host, device_password):
     local_install(device_host, device_password, app_archive_path)
+    wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
 
 
 def test_ffmpeg(device, app_dir, data_dir):
