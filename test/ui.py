@@ -5,7 +5,7 @@ from syncloudlib.integration.hosts import add_host_alias
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-from test.lib import login
+from test import lib
 
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud/ui'
@@ -30,7 +30,7 @@ def test_start(module_setup, app, domain, device_host):
 
 
 def test_login(selenium, device_user, device_password):
-    login(selenium, device_user, device_password)
+    lib.login(selenium, device_user, device_password)
 
 
 def test_admin(selenium):

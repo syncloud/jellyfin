@@ -6,7 +6,7 @@ from test.lib import login
 from syncloudlib.http import wait_for_rest
 from selenium.webdriver.common.keys import Keys
 import requests
-
+from test import lib
 TMP_DIR = '/tmp/syncloud'
 
 
@@ -14,6 +14,7 @@ TMP_DIR = '/tmp/syncloud'
 def module_setup(request, device, artifact_dir):
     def module_teardown():
         device.run_ssh('journalctl > {0}/refresh.journalctl.log'.format(TMP_DIR), throw=False)
+        device.run_ssh('cp /var/snap/jellyfin/current/data/data/* {0}/'.format(TMP_DIR), throw=False)
         device.scp_from_device('{0}/*'.format(TMP_DIR), artifact_dir)
         check_output('cp /videos/* {0}'.format(artifact_dir), shell=True)
         check_output('chmod -R a+r {0}'.format(artifact_dir), shell=True)
@@ -28,10 +29,13 @@ def test_start(module_setup, app, device_host, domain, device):
     device.run_ssh('mkdir {0}'.format(TMP_DIR), throw=False)
 
 
-def test_upgrade(device, device_user, device_password, device_host, app_archive_path, app_domain, app):
+def test_upgrade(selenium, device, device_user, device_password, device_host, app_archive_path, app_domain, app):
     device.run_ssh('snap remove {0}'.format(app))
     device.run_ssh('snap install {0}'.format(app), retries=10)
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
+
+    lib.login(selenium, device_user, device_password)
+
     local_install(device_host, device_password, app_archive_path)
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 20)
 
