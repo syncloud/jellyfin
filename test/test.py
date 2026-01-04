@@ -7,7 +7,7 @@ import requests
 import time
 from syncloudlib.integration.hosts import add_host_alias
 from syncloudlib.integration.installer import local_install, wait_for_installer
-
+from syncloudlib.http import wait_for_rest
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud'
 
