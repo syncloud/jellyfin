@@ -14,7 +14,5 @@ def login(selenium, device_user, device_password, mode):
     selenium.screenshot(mode+'-login')
     password.send_keys(Keys.RETURN)
     selenium.screenshot(mode+'-login_progress')
-    selenium.find_by_css("span.material-icons.menu")
+    selenium.find_by(By.XPATH, "//h2[.='Nothing here.']")
     selenium.screenshot(mode+'-main')
-    selenium.find_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
-
