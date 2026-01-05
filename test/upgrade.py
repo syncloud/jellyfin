@@ -34,7 +34,7 @@ def test_upgrade(selenium, device, device_user, device_password, device_host, ap
     device.run_ssh('snap install {0}'.format(app), retries=10)
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
 
-    lib.login(selenium, device_user, device_password)
+    lib.login(selenium, device_user, device_password, "upgrade")
 
     local_install(device_host, device_password, app_archive_path)
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 20)
