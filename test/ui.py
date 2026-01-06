@@ -33,6 +33,10 @@ def test_login(selenium, device_user, device_password):
     lib.login(selenium, device_user, device_password, "install")
 
 
+def test_scan(selenium):
+    lib.scan(selenium, "install")
+
+
 def test_admin(selenium):
     selenium.clickable_by(By.CSS_SELECTOR,"span.material-icons.menu").click()
     selenium.clickable_by(By.CSS_SELECTOR, "span.navMenuOptionIcon.dashboard").click()
