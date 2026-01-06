@@ -22,7 +22,7 @@ def scan(selenium, mode):
     selenium.find_by(By.XPATH, "//span[.='Settings']")
     selenium.find_by(By.XPATH, "//span[.='Sign Out']")
     selenium.click_by(By.XPATH, "//span[.='Dashboard']")
-    selenium.click_by(By.XPATH, "//span[.='Scan All Libraries']")
+    selenium.click_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
     selenium.screenshot(mode+'-scan')
     selenium.find_by(By.XPATH, "//span[.='Running Tasks']")
     selenium.invisible_by(By.XPATH, "//span[.='Running Tasks']")
