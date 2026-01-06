@@ -19,6 +19,8 @@ def login(selenium, device_user, device_password, mode):
 
 def scan(selenium, mode):
     selenium.click_by(By.XPATH, "//button[@title='Menu']")
+    selenium.find_by(By.XPATH, "//span[.='Settings']")
+    selenium.find_by(By.XPATH, "//span[.='Sign Out']")
     selenium.click_by(By.XPATH, "//span[.='Dashboard']")
     selenium.click_by(By.XPATH, "//span[.='Scan All Libraries']")
     selenium.screenshot(mode+'-scan')
