@@ -108,11 +108,11 @@ local build(arch, test_ui, dind) = [
 
                     {
                       name: 'selenium-video',
-                      image: 'selenium/video:ffmpeg-6.1.1-20240621',
+                      image: 'selenium/video:ffmpeg-8.0-20251212',
                       detach: true,
                       environment: {
                         DISPLAY_CONTAINER_NAME: 'selenium',
-                        FILE_NAME: 'video.mkv',
+                        FILE_NAME: 'video.webm',
                       },
                       volumes: [
                         {
@@ -298,3 +298,4 @@ local build(arch, test_ui, dind) = [
 
 build('amd64', true, '20.10.21-dind') +
 build('arm64', false, '20.10.21-dind')
+
