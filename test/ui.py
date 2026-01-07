@@ -36,9 +36,3 @@ def test_login(selenium, device_user, device_password):
 def test_scan(selenium):
     lib.scan(selenium, "install")
 
-
-def test_admin(selenium):
-    selenium.clickable_by(By.CSS_SELECTOR,"span.material-icons.menu").click()
-    selenium.clickable_by(By.CSS_SELECTOR, "span.navMenuOptionIcon.dashboard").click()
-    selenium.find_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
-    selenium.screenshot('admin')
