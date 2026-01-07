@@ -112,7 +112,7 @@ local build(arch, test_ui, dind) = [
                       detach: true,
                       environment: {
                         DISPLAY_CONTAINER_NAME: 'selenium',
-                        FILE_NAME: 'video.webm',
+                        FILE_NAME: 'video.mkv',
                       },
                       volumes: [
                         {
@@ -298,4 +298,5 @@ local build(arch, test_ui, dind) = [
 
 build('amd64', true, '20.10.21-dind') +
 build('arm64', false, '20.10.21-dind')
+
 
