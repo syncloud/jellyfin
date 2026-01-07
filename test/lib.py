@@ -17,7 +17,7 @@ def login(selenium, device_user, device_password, mode):
     selenium.find_by(By.XPATH, "//h2[.='Nothing here.']")
     selenium.screenshot(mode+'-main')
 
-def scan(selenium, mode):
+def scan_prev(selenium, mode):
     selenium.click_by(By.XPATH, "//button[@title='Menu']")
     selenium.find_by(By.XPATH, "//span[.='Settings']")
     selenium.find_by(By.XPATH, "//span[.='Sign Out']")
@@ -28,3 +28,13 @@ def scan(selenium, mode):
     selenium.invisible_by(By.XPATH, "//span[.='Running Tasks']")
     selenium.screenshot(mode+'-scan-done')
 
+def scan_next(selenium, mode):
+    selenium.click_by(By.XPATH, "//button[@title='Menu']")
+    selenium.find_by(By.XPATH, "//span[.='Settings']")
+    selenium.find_by(By.XPATH, "//span[.='Sign Out']")
+    selenium.click_by(By.XPATH, "//span[.='Dashboard']")
+    selenium.click_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
+    selenium.screenshot(mode+'-scan')
+    selenium.find_by(By.XPATH, "//span[.='Devices']")
+    selenium.invisible_by(By.XPATH, "//span[.='Running Tasks']")
+    selenium.screenshot(mode+'-scan-done')

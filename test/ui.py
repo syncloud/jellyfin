@@ -34,5 +34,5 @@ def test_login(selenium, device_user, device_password):
 
 
 def test_scan(selenium):
-    lib.scan(selenium, "install")
+    lib.scan_next(selenium, "install")
 
