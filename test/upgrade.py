@@ -37,7 +37,7 @@ def test_upgrade(selenium, device, device_user, device_password, device_host, ap
 
     lib.login(selenium, device_user, device_password, "upgrade")
 
-    time.sleep(200)
+    time.sleep(600)
     lib.scan_prev(selenium, "upgrade")
 
     local_install(device_host, device_password, app_archive_path)
