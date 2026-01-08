@@ -7,7 +7,7 @@ import requests
 import time
 from syncloudlib.integration.hosts import add_host_alias
 from syncloudlib.integration.installer import local_install, wait_for_installer
-
+from syncloudlib.http import wait_for_rest
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud'
 
@@ -50,12 +50,14 @@ def test_activate_device(device):
     assert response.status_code == 200, response.text
 
 
-def test_install(app_archive_path, device_host, device_password):
+def test_install(app_archive_path, device_host, device_password, app_domain):
     local_install(device_host, device_password, app_archive_path)
+    wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
     
 
-def test_reinstall(app_archive_path, device_host, device_password):
+def test_reinstall(app_archive_path, device_host, device_password, app_domain):
     local_install(device_host, device_password, app_archive_path)
+    wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
 
 
 def test_ffmpeg(device, app_dir, data_dir):

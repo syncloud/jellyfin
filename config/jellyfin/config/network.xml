@@ -34,8 +34,8 @@
   <RemoteIPFilter />
   <IsRemoteIPFilterBlacklist>false</IsRemoteIPFilterBlacklist>
   <KnownProxies>
-    <string>{{ domain }}</string>
-    <string>{{ local_ipv4 }}</string>
-    <string>{{ ipv6 }}</string>
+    <string>{{ .AppDomain }}</string>
+    <string>{{ .LocalIPv4 }}</string>
+    <string>{{ .IPv6 }}</string>
   </KnownProxies>
 </NetworkConfiguration>
