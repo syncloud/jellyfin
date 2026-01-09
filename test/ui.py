@@ -5,7 +5,7 @@ from syncloudlib.integration.hosts import add_host_alias
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
-from test.lib import login
+from test import lib
 
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud/ui'
@@ -20,7 +20,7 @@ def module_setup(request, device, artifact_dir, ui_mode, selenium):
         device.scp_from_device('{0}/*'.format(TMP_DIR), join(artifact_dir, ui_mode))
         check_output('cp /videos/* {0}'.format(artifact_dir), shell=True)
         check_output('chmod -R a+r {0}'.format(artifact_dir), shell=True)
-        selenium.log()
+        #selenium.log()
 
     request.addfinalizer(module_teardown)
 
@@ -30,10 +30,9 @@ def test_start(module_setup, app, domain, device_host):
 
 
 def test_login(selenium, device_user, device_password):
-    login(selenium, device_user, device_password)
+    lib.login(selenium, device_user, device_password, "install")
 
 
-def test_admin(selenium):
-    selenium.clickable_by(By.CSS_SELECTOR,"span.material-icons.menu").click()
-    selenium.clickable_by(By.CSS_SELECTOR, "span.navMenuOptionIcon.dashboard").click()
-    selenium.find_by(By.XPATH, "//span[text()='Scan All Libraries']")
+def test_scan(selenium):
+    lib.scan_next(selenium, "install")
+

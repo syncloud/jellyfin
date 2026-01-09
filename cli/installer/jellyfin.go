@@ -1,0 +1,124 @@
+package installer
+
+import (
+	"context"
+	"fmt"
+	"net"
+	"net/http"
+	"os"
+	"path"
+	"strings"
+	"time"
+
+	cp "github.com/otiai10/copy"
+
+	"go.uber.org/zap"
+)
+
+type Jellyfin struct {
+	appDir, dataDir string
+	client          *http.Client
+	executor        *Executor
+	logger          *zap.Logger
+}
+
+func NewJellyfin(appDir, dataDir string, executor *Executor, logger *zap.Logger) *Jellyfin {
+	return &Jellyfin{
+		appDir:  appDir,
+		dataDir: dataDir,
+		client: &http.Client{
+			Transport: &http.Transport{
+				DialContext: func(_ context.Context, _, _ string) (net.Conn, error) {
+					return net.Dial("unix", path.Join(dataDir, "socket"))
+				},
+			},
+		},
+		executor: executor,
+		logger:   logger,
+	}
+}
+
+func (j *Jellyfin) Complete() error {
+
+	// Wait for REST endpoint to be available
+	webURL := "http://unix/web/"
+	maxWebAttempts := 20
+	for attempt := 0; attempt < maxWebAttempts; attempt++ {
+		resp, err := j.client.Get(webURL)
+		if err == nil && resp.StatusCode == 200 {
+			resp.Body.Close()
+			break
+		}
+		if resp != nil {
+			resp.Body.Close()
+		}
+		if attempt == maxWebAttempts-1 {
+			return fmt.Errorf("web endpoint not available after %d attempts", maxWebAttempts)
+		}
+		time.Sleep(10 * time.Second)
+	}
+
+	// Complete startup wizard
+	completeURL := "http://unix/Startup/Complete"
+	maxAttempts := 20
+	var lastError string
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		resp, err := j.client.Post(completeURL, "application/json", nil)
+		if err != nil {
+			lastError = fmt.Sprintf("error: %v", err)
+		} else {
+			lastError = fmt.Sprintf("%d: request failed", resp.StatusCode)
+			if resp.StatusCode == 204 {
+				resp.Body.Close()
+				return nil
+			}
+			resp.Body.Close()
+		}
+		time.Sleep(10 * time.Second)
+	}
+
+	return fmt.Errorf("failed to complete startup: %s", lastError)
+}
+
+func (j *Jellyfin) UpdateAuthPlugin() error {
+	srcDir := path.Join(j.appDir, "app", "plugins", "LDAP-Auth")
+	dstDir := path.Join(j.dataDir, "data", "plugins", "LDAP-Auth")
+
+	err := os.RemoveAll(dstDir)
+	if err != nil {
+		return err
+	}
+
+	err = cp.Copy(srcDir, dstDir)
+	if err != nil {
+		return err
+	}
+
+	err = cp.Copy(
+		path.Join(j.appDir, "config", "jellyfin", "plugins"),
+		path.Join(j.dataDir, "data", "plugins"),
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (j *Jellyfin) LocalIPv4() string {
+	output, err := j.executor.Run("/snap/platform/current/bin/cli", "ipv4")
+	if err != nil {
+		j.logger.Error("failed to get local ipv4", zap.Error(err))
+		return "localhost"
+	}
+	return strings.TrimSpace(output)
+}
+
+func (j *Jellyfin) IPv6() string {
+	output, err := j.executor.Run("/snap/platform/current/bin/cli", "ipv6")
+	if err != nil {
+		j.logger.Error("failed to get ipv6", zap.Error(err))
+		return "localhost"
+	}
+	return strings.TrimSpace(output)
+}

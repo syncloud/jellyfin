@@ -3,17 +3,38 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
 
 
-def login(selenium, device_user, device_password):
+def login(selenium, device_user, device_password, mode):
     selenium.open_app()
-    selenium.screenshot('index')
+    selenium.screenshot(mode+'-index')
     # selenium.click_by(By.XPATH, '//span[.="Next"]')
     selenium.wait_or_screenshot(EC.element_to_be_clickable((By.CSS_SELECTOR, "#txtManualName")))
     selenium.find_by_id("txtManualName").send_keys(device_user)
     password = selenium.find_by_id("txtManualPassword")
     password.send_keys(device_password)
-    selenium.screenshot('login')
+    selenium.screenshot(mode+'-login')
     password.send_keys(Keys.RETURN)
-    selenium.screenshot('login_progress')
-    selenium.find_by_css("span.material-icons.menu")
-    selenium.screenshot('main')
+    selenium.screenshot(mode+'-login_progress')
+    selenium.find_by(By.XPATH, "//h2[.='Nothing here.']")
+    selenium.screenshot(mode+'-main')
 
+def scan_prev(selenium, mode):
+    selenium.click_by(By.XPATH, "//button[@title='Menu']")
+    selenium.find_by(By.XPATH, "//span[.='Settings']")
+    selenium.find_by(By.XPATH, "//span[.='Sign Out']")
+    selenium.click_by(By.XPATH, "//span[.='Dashboard']")
+    selenium.click_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
+    selenium.screenshot(mode+'-scan')
+    selenium.find_by(By.XPATH, "//h3[.='Active Devices']")
+    selenium.invisible_by(By.XPATH, "//span[.='Running Tasks']")
+    selenium.screenshot(mode+'-scan-done')
+
+def scan_next(selenium, mode):
+    selenium.click_by(By.XPATH, "//button[@title='Menu']")
+    selenium.find_by(By.XPATH, "//span[.='Settings']")
+    selenium.find_by(By.XPATH, "//span[.='Sign Out']")
+    selenium.click_by(By.XPATH, "//span[.='Dashboard']")
+    selenium.click_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
+    selenium.screenshot(mode+'-scan')
+    selenium.find_by(By.XPATH, "//span[.='Devices']")
+    selenium.invisible_by(By.XPATH, "//span[.='Running Tasks']")
+    selenium.screenshot(mode+'-scan-done')
