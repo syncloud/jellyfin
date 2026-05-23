@@ -37,7 +37,7 @@ apps:
     command: bin/cli restore-post-start
 
 confinement: strict
-description: Jellyfin
+description: The Free Software Media System
 grade: stable
 name: jellyfin
-summary: Jellyfin
+summary: Jellyfin Media System
