@@ -4,13 +4,16 @@ local ldap_version = '22.0.0.0';
 local browser = 'chrome';
 local nginx = '1.29.3-alpine3.22';
 local debian = 'bookworm-slim';
-local platform = '25.09';
+local platform = '26.08.01';
 local selenium = '4.35.0-20250828';
 local store_publisher = 'stable-346';
 local python = '3.12-slim-bookworm';
 local go = '1.25';
 local distro_default = 'bookworm';
-local distros = ['bookworm'];
+local distros = ['bookworm', 'buster'];
+
+local platform_image(distro) =
+  'syncloud/platform-' + distro + ':' + platform;
 
 
 local build(arch, test_ui, dind) = [
@@ -49,13 +52,16 @@ local build(arch, test_ui, dind) = [
                  './nginx/build.sh',
                ],
              },
+           ] + [
              {
-               name: 'nginx test',
-               image: 'syncloud/platform-' + distro_default + '-' + arch + ':' + platform,
+               name: 'nginx test ' + distro,
+               image: platform_image(distro),
                commands: [
                  './nginx/test.sh',
                ],
-             },
+             }
+             for distro in distros
+           ] + [
              {
                name: 'build',
                image: 'jellyfin/jellyfin:' + version,
@@ -213,8 +219,9 @@ local build(arch, test_ui, dind) = [
     ] + [
       {
         name: name + '.' + distro + '.com',
-        image: 'syncloud/platform-' + distro + '-' + arch + ':' + platform,
+        image: platform_image(distro),
         privileged: true,
+        entrypoint: ['/bin/sh', '-c', "mkdir -p /etc/systemd/system/snapd.service.d && printf '[Service]\\nExecStartPost=/bin/sh -c \"/usr/bin/snap set system refresh.hold=2099-01-01T00:00:00Z\"\\n' > /etc/systemd/system/snapd.service.d/disable-refresh.conf && exec /sbin/init"],
         volumes: [
           {
             name: 'dbus',
