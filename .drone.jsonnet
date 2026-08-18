@@ -38,6 +38,7 @@ local build(arch, test_ui, dind) = [
                image: 'golang:' + go,
                commands: [
                  'cd cli',
+                 'go test ./...',
                  'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/install ./cmd/install',
                  'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/configure ./cmd/configure',
                  'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/pre-refresh ./cmd/pre-refresh',

@@ -15,6 +15,15 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	webURL       = "http://unix/web/"
+	completeURL  = "http://unix/Startup/Complete"
+	maxAttempts  = 20
+	attemptDelay = 10 * time.Second
+	logTailLines = 40
+	fatalMarker  = "Unhandled Exception"
+)
+
 type Jellyfin struct {
 	appDir, dataDir string
 	client          *http.Client
@@ -39,45 +48,119 @@ func NewJellyfin(appDir, dataDir string, executor *Executor, logger *zap.Logger)
 }
 
 func (j *Jellyfin) Complete() error {
-
-	// Wait for REST endpoint to be available
-	webURL := "http://unix/web/"
-	maxWebAttempts := 20
-	for attempt := 0; attempt < maxWebAttempts; attempt++ {
-		resp, err := j.client.Get(webURL)
-		if err == nil && resp.StatusCode == 200 {
-			resp.Body.Close()
-			break
-		}
-		if resp != nil {
-			resp.Body.Close()
-		}
-		if attempt == maxWebAttempts-1 {
-			return fmt.Errorf("web endpoint not available after %d attempts", maxWebAttempts)
-		}
-		time.Sleep(10 * time.Second)
+	err := j.waitForWeb()
+	if err != nil {
+		return err
 	}
+	return j.completeStartup()
+}
 
-	// Complete startup wizard
-	completeURL := "http://unix/Startup/Complete"
-	maxAttempts := 20
-	var lastError string
+func (j *Jellyfin) waitForWeb() error {
+	lastResponse := "not attempted"
 	for attempt := 0; attempt < maxAttempts; attempt++ {
-		resp, err := j.client.Post(completeURL, "application/json", nil)
+		if attempt > 0 {
+			time.Sleep(attemptDelay)
+		}
+
+		resp, err := j.client.Get(webURL)
 		if err != nil {
-			lastError = fmt.Sprintf("error: %v", err)
+			lastResponse = err.Error()
 		} else {
-			lastError = fmt.Sprintf("%d: request failed", resp.StatusCode)
-			if resp.StatusCode == 204 {
-				resp.Body.Close()
+			status := resp.StatusCode
+			resp.Body.Close()
+			if status == http.StatusOK {
 				return nil
 			}
-			resp.Body.Close()
+			lastResponse = fmt.Sprintf("HTTP %d", status)
 		}
-		time.Sleep(10 * time.Second)
+
+		serverLog := j.ServerLog()
+		if strings.Contains(serverLog, fatalMarker) {
+			return fmt.Errorf("server failed to start, last web response: %s\n%s", lastResponse, serverLog)
+		}
 	}
 
-	return fmt.Errorf("failed to complete startup: %s", lastError)
+	return fmt.Errorf("web endpoint not available after %d attempts, last web response: %s\n%s",
+		maxAttempts, lastResponse, j.ServerLog())
+}
+
+func (j *Jellyfin) completeStartup() error {
+	lastResponse := "not attempted"
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		if attempt > 0 {
+			time.Sleep(attemptDelay)
+		}
+
+		resp, err := j.client.Post(completeURL, "application/json", nil)
+		if err != nil {
+			lastResponse = err.Error()
+			continue
+		}
+		status := resp.StatusCode
+		resp.Body.Close()
+		if status == http.StatusNoContent {
+			return nil
+		}
+		lastResponse = fmt.Sprintf("HTTP %d", status)
+	}
+
+	return fmt.Errorf("failed to complete startup after %d attempts, last response: %s\n%s",
+		maxAttempts, lastResponse, j.ServerLog())
+}
+
+func (j *Jellyfin) ServerLog() string {
+	dir := path.Join(j.dataDir, "data", "log")
+	newest, err := newestFile(dir)
+	if err != nil {
+		return fmt.Sprintf("no server log in %s: %v", dir, err)
+	}
+
+	content, err := os.ReadFile(newest)
+	if err != nil {
+		return fmt.Sprintf("cannot read %s: %v", newest, err)
+	}
+
+	return fmt.Sprintf("last %d lines of %s:\n%s", logTailLines, newest, tail(string(content), logTailLines))
+}
+
+func newestFile(dir string) (string, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return "", err
+	}
+
+	newest := ""
+	newestTime := time.Time{}
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		info, err := entry.Info()
+		if err != nil {
+			continue
+		}
+		if newest == "" || info.ModTime().After(newestTime) {
+			newest = path.Join(dir, entry.Name())
+			newestTime = info.ModTime()
+		}
+	}
+
+	if newest == "" {
+		return "", fmt.Errorf("no files found")
+	}
+	return newest, nil
+}
+
+func tail(content string, lines int) string {
+	trimmed := strings.TrimRight(content, "\n")
+	if trimmed == "" {
+		return ""
+	}
+	split := strings.Split(trimmed, "\n")
+	if len(split) > lines {
+		split = split[len(split)-lines:]
+	}
+	return strings.Join(split, "\n")
 }
 
 func (j *Jellyfin) UpdateAuthPlugin() error {
