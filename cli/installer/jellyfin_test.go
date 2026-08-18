@@ -94,7 +94,7 @@ func TestServerLogIncludesFatalError(t *testing.T) {
 			"[18:41:10] [FTL] Main: Unhandled Exception\n"+
 			"System.InvalidOperationException: The path has insufficient free space. Available: 855MiB, Required: 2GiB.\n")
 
-	result := jellyfinForLog(dataDir).ServerLog()
+	result := jellyfinForLog(dataDir).serverLog()
 
 	if !strings.Contains(result, fatalMarker) {
 		t.Fatalf("expected the fatal marker in the log, got %q", result)
@@ -105,7 +105,7 @@ func TestServerLogIncludesFatalError(t *testing.T) {
 }
 
 func TestServerLogWhenDirectoryMissing(t *testing.T) {
-	result := jellyfinForLog(t.TempDir()).ServerLog()
+	result := jellyfinForLog(t.TempDir()).serverLog()
 
 	if !strings.Contains(result, "no server log in") {
 		t.Fatalf("expected a readable message when the log dir is missing, got %q", result)

@@ -74,14 +74,14 @@ func (j *Jellyfin) waitForWeb() error {
 			lastResponse = fmt.Sprintf("HTTP %d", status)
 		}
 
-		serverLog := j.ServerLog()
-		if strings.Contains(serverLog, fatalMarker) {
-			return fmt.Errorf("server failed to start, last web response: %s\n%s", lastResponse, serverLog)
+		output := j.serverLog()
+		if strings.Contains(output, fatalMarker) {
+			return fmt.Errorf("server failed to start, last web response: %s\n%s", lastResponse, output)
 		}
 	}
 
 	return fmt.Errorf("web endpoint not available after %d attempts, last web response: %s\n%s",
-		maxAttempts, lastResponse, j.ServerLog())
+		maxAttempts, lastResponse, j.serverLog())
 }
 
 func (j *Jellyfin) completeStartup() error {
@@ -105,10 +105,10 @@ func (j *Jellyfin) completeStartup() error {
 	}
 
 	return fmt.Errorf("failed to complete startup after %d attempts, last response: %s\n%s",
-		maxAttempts, lastResponse, j.ServerLog())
+		maxAttempts, lastResponse, j.serverLog())
 }
 
-func (j *Jellyfin) ServerLog() string {
+func (j *Jellyfin) serverLog() string {
 	dir := path.Join(j.dataDir, "data", "log")
 	newest, err := newestFile(dir)
 	if err != nil {
