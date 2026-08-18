@@ -46,7 +46,8 @@ def test_start(module_setup, device, app, domain, device_host):
  
 
 def test_activate_device(device):
-    response = retry(device.activate_custom, 1)
+    device.run_ssh('snap watch --last=auto-refresh', retries=10, throw=False)
+    response = retry(device.activate_custom)
     assert response.status_code == 200, response.text
 
 
