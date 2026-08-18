@@ -137,6 +137,7 @@ local build(arch, test_ui, dind) = [
                       commands: [
                         'cd test',
                         './deps.sh',
+                        './wait-for-selenium.sh',
                         'py.test -x -s ui.py --distro=' + distro_default + ' --ver=$DRONE_BUILD_NUMBER --app=' + name + ' --browser=' + browser,
                       ],
                       volumes: [{
@@ -154,6 +155,7 @@ local build(arch, test_ui, dind) = [
                 commands: [
                   'cd test',
                   './deps.sh',
+                  './wait-for-selenium.sh',
                   'py.test -x -s upgrade.py --distro=' + distro_default + ' --ver=$DRONE_BUILD_NUMBER --app=' + name + ' --browser=' + browser,
                 ],
                 privileged: true,
