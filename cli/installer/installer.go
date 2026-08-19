@@ -14,6 +14,8 @@ import (
 
 const App = "jellyfin"
 
+var OwnedConfigs = map[string]bool{"logging.default.json": true}
+
 type Variables struct {
 	App              string
 	AppDir           string
@@ -76,7 +78,7 @@ func (i *Installer) Install() error {
 		return err
 	}
 
-	err = i.SeedAppConfig()
+	err = i.ApplyAppConfig()
 	if err != nil {
 		return err
 	}
@@ -182,6 +184,11 @@ func (i *Installer) PostRefresh() error {
 		return err
 	}
 
+	err = i.ApplyAppConfig()
+	if err != nil {
+		return err
+	}
+
 	err = i.ClearVersion()
 	if err != nil {
 		return err
@@ -242,17 +249,63 @@ func (i *Installer) UpdateConfigs() error {
 	)
 }
 
-func (i *Installer) SeedAppConfig() error {
+func (i *Installer) ApplyAppConfig() error {
 	variables, err := i.Variables()
 	if err != nil {
 		return err
 	}
 
-	return config.Generate(
+	rendered, err := os.MkdirTemp("", App)
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(rendered)
+
+	err = config.Generate(
 		path.Join(i.appDir, "config", "jellyfin", "config"),
-		path.Join(i.dataDir, "config"),
+		rendered,
 		variables,
 	)
+	if err != nil {
+		return err
+	}
+
+	err = linux.CreateMissingDirs(i.configDir)
+	if err != nil {
+		return err
+	}
+
+	entries, err := os.ReadDir(rendered)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		err = i.applyConfigFile(rendered, entry.Name())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *Installer) applyConfigFile(rendered, name string) error {
+	target := path.Join(i.configDir, name)
+
+	if !OwnedConfigs[name] {
+		_, err := os.Stat(target)
+		if err == nil {
+			i.logger.Info("keeping existing config", zap.String("file", name))
+			return nil
+		}
+	}
+
+	i.logger.Info("applying config", zap.String("file", name))
+	return cp.Copy(path.Join(rendered, name), target)
 }
 
 func (i *Installer) Variables() (Variables, error) {
