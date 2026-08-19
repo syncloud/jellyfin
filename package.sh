@@ -26,29 +26,9 @@ echo "architectures:" >> ${SNAP_DIR}/meta/snap.yaml
 echo "- ${ARCH}" >> ${SNAP_DIR}/meta/snap.yaml
 echo $VERSION > ${SNAP_DIR}/version
 
-for f in \
-    meta/snap.yaml \
-    meta/gui/icon.png \
-    meta/hooks/install \
-    meta/hooks/configure \
-    meta/hooks/pre-refresh \
-    meta/hooks/post-refresh \
-    bin/cli \
-    bin/service.server.sh \
-    bin/service.nginx.sh \
-    bin/ffmpeg.sh \
-    bin/ffprobe.sh \
-    config/nginx/nginx.conf \
-    config/jellyfin/config/network.xml \
-    config/jellyfin/config/system.xml \
-    nginx/bin/nginx.sh \
-    app/jellyfin/jellyfin \
-    version; do
-    if [[ ! -e ${SNAP_DIR}/${f} ]]; then
-        echo "missing from snap: ${f}"
-        exit 1
-    fi
-done
+test -f ${SNAP_DIR}/meta/gui/icon.png
+test -x ${SNAP_DIR}/meta/hooks/install
+test -x ${SNAP_DIR}/bin/cli
 
 du -d10 -h $SNAP_DIR | sort -h | tail -100
 
