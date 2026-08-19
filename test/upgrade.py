@@ -44,4 +44,12 @@ def test_upgrade(selenium, device, device_user, device_password, device_host, ap
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 20)
 
 
+def test_app_config_is_migrated(device, snap_data_dir, app_domain):
+    network = device.run_ssh('cat {0}/config/network.xml'.format(snap_data_dir))
+    assert app_domain in network, network
+
+    logging = device.run_ssh('cat {0}/config/logging.default.json'.format(snap_data_dir))
+    assert '"File"' not in logging, logging
+
+
 

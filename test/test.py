@@ -46,7 +46,8 @@ def test_start(module_setup, device, app, domain, device_host):
  
 
 def test_activate_device(device):
-    response = retry(device.activate_custom, 1)
+    device.run_ssh('snap watch --last=auto-refresh', retries=10, throw=False)
+    response = retry(device.activate_custom)
     assert response.status_code == 200, response.text
 
 
@@ -58,6 +59,11 @@ def test_install(app_archive_path, device_host, device_password, app_domain):
 def test_reinstall(app_archive_path, device_host, device_password, app_domain):
     local_install(device_host, device_password, app_archive_path)
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
+
+
+def test_app_config_is_seeded_into_the_config_dir(device, snap_data_dir, app_domain):
+    network = device.run_ssh('cat {0}/config/network.xml'.format(snap_data_dir))
+    assert app_domain in network, network
 
 
 def test_ffmpeg(device, app_dir, data_dir):

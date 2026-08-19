@@ -14,6 +14,8 @@ import (
 
 const App = "jellyfin"
 
+var OwnedConfigs = map[string]bool{"logging.default.json": true}
+
 type Variables struct {
 	App              string
 	AppDir           string
@@ -72,6 +74,11 @@ func (i *Installer) Install() error {
 	}
 
 	err = i.UpdateConfigs()
+	if err != nil {
+		return err
+	}
+
+	err = i.ApplyAppConfig()
 	if err != nil {
 		return err
 	}
@@ -177,6 +184,11 @@ func (i *Installer) PostRefresh() error {
 		return err
 	}
 
+	err = i.ApplyAppConfig()
+	if err != nil {
+		return err
+	}
+
 	err = i.ClearVersion()
 	if err != nil {
 		return err
@@ -225,11 +237,84 @@ func (i *Installer) UpdateConfigs() error {
 		return err
 	}
 
-	appDomain, err := i.platformClient.GetAppDomainName(App)
+	variables, err := i.Variables()
 	if err != nil {
 		return err
 	}
-	variables := Variables{
+
+	return config.Generate(
+		path.Join(i.appDir, "config", "nginx"),
+		path.Join(i.dataDir, "config"),
+		variables,
+	)
+}
+
+func (i *Installer) ApplyAppConfig() error {
+	variables, err := i.Variables()
+	if err != nil {
+		return err
+	}
+
+	rendered, err := os.MkdirTemp("", App)
+	if err != nil {
+		return err
+	}
+	defer os.RemoveAll(rendered)
+
+	err = config.Generate(
+		path.Join(i.appDir, "config", "jellyfin", "config"),
+		rendered,
+		variables,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = linux.CreateMissingDirs(i.configDir)
+	if err != nil {
+		return err
+	}
+
+	entries, err := os.ReadDir(rendered)
+	if err != nil {
+		return err
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+		err = i.applyConfigFile(rendered, entry.Name())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (i *Installer) applyConfigFile(rendered, name string) error {
+	target := path.Join(i.configDir, name)
+
+	if !OwnedConfigs[name] {
+		_, err := os.Stat(target)
+		if err == nil {
+			i.logger.Info("keeping existing config", zap.String("file", name))
+			return nil
+		}
+	}
+
+	i.logger.Info("applying config", zap.String("file", name))
+	return cp.Copy(path.Join(rendered, name), target)
+}
+
+func (i *Installer) Variables() (Variables, error) {
+	appDomain, err := i.platformClient.GetAppDomainName(App)
+	if err != nil {
+		return Variables{}, err
+	}
+
+	return Variables{
 		App:       App,
 		AppDir:    i.appDir,
 		DataDir:   i.dataDir,
@@ -237,18 +322,7 @@ func (i *Installer) UpdateConfigs() error {
 		AppDomain: appDomain,
 		LocalIPv4: i.jellyfin.LocalIPv4(),
 		IPv6:      i.jellyfin.IPv6(),
-	}
-
-	err = config.Generate(
-		path.Join(i.appDir, "config"),
-		path.Join(i.dataDir, "config"),
-		variables,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	}, nil
 }
 
 func (i *Installer) BackupPreStop() error {
