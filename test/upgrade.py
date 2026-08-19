@@ -6,7 +6,6 @@ from test.lib import login
 from syncloudlib.http import wait_for_rest
 from selenium.webdriver.common.keys import Keys
 import requests
-import time
 from test import lib
 TMP_DIR = '/tmp/syncloud'
 
@@ -36,9 +35,6 @@ def test_upgrade(selenium, device, device_user, device_password, device_host, ap
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
 
     lib.login(selenium, device_user, device_password, "upgrade")
-
-    time.sleep(600)
-    #lib.scan_prev(selenium, "upgrade")
 
     local_install(device_host, device_password, app_archive_path)
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 20)
