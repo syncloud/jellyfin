@@ -61,8 +61,8 @@ def test_reinstall(app_archive_path, device_host, device_password, app_domain):
     wait_for_rest(requests.session(), "https://{0}".format(app_domain), 200, 10)
 
 
-def test_app_config_is_seeded_into_the_config_dir(device, data_dir, app_domain):
-    network = device.run_ssh('cat {0}/config/network.xml'.format(data_dir))
+def test_app_config_is_seeded_into_the_config_dir(device, snap_data_dir, app_domain):
+    network = device.run_ssh('cat {0}/config/network.xml'.format(snap_data_dir))
     assert app_domain in network, network
 
 
