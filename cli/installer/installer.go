@@ -76,6 +76,11 @@ func (i *Installer) Install() error {
 		return err
 	}
 
+	err = i.SeedAppConfig()
+	if err != nil {
+		return err
+	}
+
 	err = i.FixPermissions()
 	if err != nil {
 		return err
@@ -225,11 +230,38 @@ func (i *Installer) UpdateConfigs() error {
 		return err
 	}
 
-	appDomain, err := i.platformClient.GetAppDomainName(App)
+	variables, err := i.Variables()
 	if err != nil {
 		return err
 	}
-	variables := Variables{
+
+	return config.Generate(
+		path.Join(i.appDir, "config", "nginx"),
+		path.Join(i.dataDir, "config"),
+		variables,
+	)
+}
+
+func (i *Installer) SeedAppConfig() error {
+	variables, err := i.Variables()
+	if err != nil {
+		return err
+	}
+
+	return config.Generate(
+		path.Join(i.appDir, "config", "jellyfin", "config"),
+		path.Join(i.dataDir, "config"),
+		variables,
+	)
+}
+
+func (i *Installer) Variables() (Variables, error) {
+	appDomain, err := i.platformClient.GetAppDomainName(App)
+	if err != nil {
+		return Variables{}, err
+	}
+
+	return Variables{
 		App:       App,
 		AppDir:    i.appDir,
 		DataDir:   i.dataDir,
@@ -237,18 +269,7 @@ func (i *Installer) UpdateConfigs() error {
 		AppDomain: appDomain,
 		LocalIPv4: i.jellyfin.LocalIPv4(),
 		IPv6:      i.jellyfin.IPv6(),
-	}
-
-	err = config.Generate(
-		path.Join(i.appDir, "config"),
-		path.Join(i.dataDir, "config"),
-		variables,
-	)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	}, nil
 }
 
 func (i *Installer) BackupPreStop() error {

@@ -38,8 +38,9 @@ for f in \
     bin/service.nginx.sh \
     bin/ffmpeg.sh \
     bin/ffprobe.sh \
-    config/nginx.conf \
+    config/nginx/nginx.conf \
     config/jellyfin/config/network.xml \
+    config/jellyfin/config/system.xml \
     nginx/bin/nginx.sh \
     app/jellyfin/jellyfin \
     version; do
