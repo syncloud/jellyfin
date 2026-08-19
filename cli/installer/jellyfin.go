@@ -20,18 +20,23 @@ const (
 	completeURL  = "http://unix/Startup/Complete"
 	maxAttempts  = 20
 	attemptDelay = 10 * time.Second
-	logTailLines = 40
+	serverUnit   = "snap.jellyfin.server.service"
+	logTailLines = "40"
 	fatalMarker  = "Unhandled Exception"
 )
+
+type CommandRunner interface {
+	Run(app string, args ...string) (string, error)
+}
 
 type Jellyfin struct {
 	appDir, dataDir string
 	client          *http.Client
-	executor        *Executor
+	executor        CommandRunner
 	logger          *zap.Logger
 }
 
-func NewJellyfin(appDir, dataDir string, executor *Executor, logger *zap.Logger) *Jellyfin {
+func NewJellyfin(appDir, dataDir string, executor CommandRunner, logger *zap.Logger) *Jellyfin {
 	return &Jellyfin{
 		appDir:  appDir,
 		dataDir: dataDir,
@@ -109,58 +114,11 @@ func (j *Jellyfin) completeStartup() error {
 }
 
 func (j *Jellyfin) serverLog() string {
-	dir := path.Join(j.dataDir, "data", "log")
-	newest, err := newestFile(dir)
+	output, err := j.executor.Run("journalctl", "-u", serverUnit, "-n", logTailLines, "--no-pager")
 	if err != nil {
-		return fmt.Sprintf("no server log in %s: %v", dir, err)
+		return fmt.Sprintf("cannot read the journal of %s: %v\n%s", serverUnit, err, output)
 	}
-
-	content, err := os.ReadFile(newest)
-	if err != nil {
-		return fmt.Sprintf("cannot read %s: %v", newest, err)
-	}
-
-	return fmt.Sprintf("last %d lines of %s:\n%s", logTailLines, newest, tail(string(content), logTailLines))
-}
-
-func newestFile(dir string) (string, error) {
-	entries, err := os.ReadDir(dir)
-	if err != nil {
-		return "", err
-	}
-
-	newest := ""
-	newestTime := time.Time{}
-	for _, entry := range entries {
-		if entry.IsDir() {
-			continue
-		}
-		info, err := entry.Info()
-		if err != nil {
-			continue
-		}
-		if newest == "" || info.ModTime().After(newestTime) {
-			newest = path.Join(dir, entry.Name())
-			newestTime = info.ModTime()
-		}
-	}
-
-	if newest == "" {
-		return "", fmt.Errorf("no files found")
-	}
-	return newest, nil
-}
-
-func tail(content string, lines int) string {
-	trimmed := strings.TrimRight(content, "\n")
-	if trimmed == "" {
-		return ""
-	}
-	split := strings.Split(trimmed, "\n")
-	if len(split) > lines {
-		split = split[len(split)-lines:]
-	}
-	return strings.Join(split, "\n")
+	return fmt.Sprintf("last %s journal lines of %s:\n%s", logTailLines, serverUnit, output)
 }
 
 func (j *Jellyfin) UpdateAuthPlugin() error {

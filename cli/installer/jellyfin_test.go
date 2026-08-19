@@ -1,100 +1,30 @@
 package installer
 
 import (
-	"os"
-	"path"
+	"fmt"
 	"strings"
 	"testing"
-	"time"
 
 	"go.uber.org/zap"
 )
 
-func TestTailReturnsLastLines(t *testing.T) {
-	result := tail("one\ntwo\nthree\nfour", 2)
-	if result != "three\nfour" {
-		t.Fatalf("expected last two lines, got %q", result)
-	}
+type RunnerStub struct {
+	output  string
+	err     error
+	command string
 }
 
-func TestTailReturnsEverythingWhenShorterThanLimit(t *testing.T) {
-	result := tail("one\ntwo", 40)
-	if result != "one\ntwo" {
-		t.Fatalf("expected all lines, got %q", result)
-	}
-}
-
-func TestTailIgnoresTrailingNewlines(t *testing.T) {
-	result := tail("one\ntwo\n\n", 1)
-	if result != "two" {
-		t.Fatalf("expected last non empty line, got %q", result)
-	}
-}
-
-func TestTailEmpty(t *testing.T) {
-	result := tail("", 10)
-	if result != "" {
-		t.Fatalf("expected empty string, got %q", result)
-	}
-}
-
-func TestNewestFilePicksMostRecentlyModified(t *testing.T) {
-	dir := t.TempDir()
-	older := path.Join(dir, "log_20260101.log")
-	newer := path.Join(dir, "log_20260102.log")
-	writeFile(t, older, "old")
-	writeFile(t, newer, "new")
-
-	past := time.Now().Add(-time.Hour)
-	if err := os.Chtimes(older, past, past); err != nil {
-		t.Fatal(err)
-	}
-
-	result, err := newestFile(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != newer {
-		t.Fatalf("expected %s, got %s", newer, result)
-	}
-}
-
-func TestNewestFileSkipsDirectories(t *testing.T) {
-	dir := t.TempDir()
-	if err := os.Mkdir(path.Join(dir, "nested"), 0755); err != nil {
-		t.Fatal(err)
-	}
-	file := path.Join(dir, "log.log")
-	writeFile(t, file, "content")
-
-	result, err := newestFile(dir)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if result != file {
-		t.Fatalf("expected %s, got %s", file, result)
-	}
-}
-
-func TestNewestFileEmptyDir(t *testing.T) {
-	_, err := newestFile(t.TempDir())
-	if err == nil {
-		t.Fatal("expected an error for an empty directory")
-	}
+func (r *RunnerStub) Run(app string, args ...string) (string, error) {
+	r.command = strings.Join(append([]string{app}, args...), " ")
+	return r.output, r.err
 }
 
 func TestServerLogIncludesFatalError(t *testing.T) {
-	dataDir := t.TempDir()
-	logDir := path.Join(dataDir, "data", "log")
-	if err := os.MkdirAll(logDir, 0755); err != nil {
-		t.Fatal(err)
-	}
-	writeFile(t, path.Join(logDir, "log_20260818.log"),
-		"[18:41:10] [INF] Main: starting\n"+
-			"[18:41:10] [FTL] Main: Unhandled Exception\n"+
-			"System.InvalidOperationException: The path has insufficient free space. Available: 855MiB, Required: 2GiB.\n")
+	runner := &RunnerStub{output: "[FTL] Main: Unhandled Exception\n" +
+		"System.InvalidOperationException: The path has insufficient free space. " +
+		"Available: 855MiB, Required: 2GiB.\n"}
 
-	result := jellyfinForLog(dataDir).serverLog()
+	result := jellyfinWith(runner).serverLog()
 
 	if !strings.Contains(result, fatalMarker) {
 		t.Fatalf("expected the fatal marker in the log, got %q", result)
@@ -104,21 +34,32 @@ func TestServerLogIncludesFatalError(t *testing.T) {
 	}
 }
 
-func TestServerLogWhenDirectoryMissing(t *testing.T) {
-	result := jellyfinForLog(t.TempDir()).serverLog()
+func TestServerLogReadsTheServerUnit(t *testing.T) {
+	runner := &RunnerStub{output: "some log"}
 
-	if !strings.Contains(result, "no server log in") {
-		t.Fatalf("expected a readable message when the log dir is missing, got %q", result)
+	jellyfinWith(runner).serverLog()
+
+	if !strings.Contains(runner.command, serverUnit) {
+		t.Fatalf("expected the server unit to be read, got %q", runner.command)
+	}
+	if !strings.Contains(runner.command, "journalctl") {
+		t.Fatalf("expected the journal to be read, got %q", runner.command)
 	}
 }
 
-func jellyfinForLog(dataDir string) *Jellyfin {
-	return NewJellyfin("", dataDir, NewExecutor(zap.NewNop()), zap.NewNop())
+func TestServerLogWhenJournalCannotBeRead(t *testing.T) {
+	runner := &RunnerStub{output: "permission denied", err: fmt.Errorf("exit status 1")}
+
+	result := jellyfinWith(runner).serverLog()
+
+	if !strings.Contains(result, "cannot read the journal") {
+		t.Fatalf("expected a readable message when the journal fails, got %q", result)
+	}
+	if !strings.Contains(result, "permission denied") {
+		t.Fatalf("expected the command output to be kept, got %q", result)
+	}
 }
 
-func writeFile(t *testing.T, name, content string) {
-	t.Helper()
-	if err := os.WriteFile(name, []byte(content), 0644); err != nil {
-		t.Fatal(err)
-	}
+func jellyfinWith(runner CommandRunner) *Jellyfin {
+	return NewJellyfin("", "/var/snap/jellyfin/current", runner, zap.NewNop())
 }
