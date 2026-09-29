@@ -179,7 +179,12 @@ func (i *Installer) PreRefresh() error {
 
 func (i *Installer) PostRefresh() error {
 
-	err := i.UpdateConfigs()
+	err := DropNilEncoderPreset(path.Join(i.configDir, "encoding.xml"), i.logger)
+	if err != nil {
+		return err
+	}
+
+	err = i.UpdateConfigs()
 	if err != nil {
 		return err
 	}
