@@ -1,22 +1,20 @@
 local name = 'jellyfin';
-local version = '10.11.5';
-local ldap_version = '22.0.0.0';
-local browser = 'chrome';
-local nginx = '1.29.3-alpine3.22';
+local version = '12.1';
+local ldap_version = '24.0.0.0';
+local nginx = '1.31.6-alpine3.24';
 local debian = 'bookworm-slim';
 local platform = '26.08.01';
-local selenium = '4.35.0-20250828';
+local playwright = 'mcr.microsoft.com/playwright:v1.59.1-jammy';
 local store_publisher = 'stable-346';
 local python = '3.12-slim-bookworm';
-local go = '1.25';
+local go = '1.27';
 local distro_default = 'bookworm';
 local distros = ['bookworm', 'buster'];
 
 local platform_image(distro) =
   'syncloud/platform-' + distro + ':' + platform;
 
-
-local build(arch, test_ui, dind) = [
+local build(arch) = [
   {
     kind: 'pipeline',
     type: 'docker',
@@ -27,25 +25,22 @@ local build(arch, test_ui, dind) = [
     },
     steps: [
              {
-               name: 'version',
-               image: 'debian:' + debian,
-               commands: [
-                 'echo $DRONE_BUILD_NUMBER > version',
-               ],
-             },
-             {
                name: 'cli',
                image: 'golang:' + go,
                commands: [
-                 'cd cli',
-                 'go test ./...',
-                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/install ./cmd/install',
-                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/configure ./cmd/configure',
-                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/pre-refresh ./cmd/pre-refresh',
-                 'CGO_ENABLED=0 go build -o ../build/snap/meta/hooks/post-refresh ./cmd/post-refresh',
-                 'CGO_ENABLED=0 go build -o ../build/snap/bin/cli ./cmd/cli',
+                 './cli/build.sh',
                ],
              },
+           ] + [
+             {
+               name: 'cli test ' + distro,
+               image: platform_image(distro),
+               commands: [
+                 './cli/test.sh',
+               ],
+             }
+             for distro in distros
+           ] + [
              {
                name: 'nginx',
                image: 'nginx:' + nginx,
@@ -67,15 +62,14 @@ local build(arch, test_ui, dind) = [
                name: 'build',
                image: 'jellyfin/jellyfin:' + version,
                commands: [
-                 './build.sh ' + ldap_version,
+                 './build.sh ' + version + ' ' + ldap_version,
                ],
              },
              {
                name: 'package',
                image: 'debian:' + debian,
                commands: [
-                 'VERSION=$(cat version)',
-                 './package.sh ' + name + ' $VERSION ',
+                 './package.sh ' + name + ' $DRONE_BUILD_NUMBER',
                ],
              },
            ] + [
@@ -83,89 +77,47 @@ local build(arch, test_ui, dind) = [
                name: 'test ' + distro,
                image: 'python:' + python,
                commands: [
-                 'cd test',
-                 './deps.sh',
-                 'py.test -x -s test.py --distro=' + distro + ' --ver=$DRONE_BUILD_NUMBER --app=' + name,
+                 './ci/test.sh test.py ' + distro + ' ' + name,
                ],
              }
              for distro in distros
-           ] + (if test_ui then (
-                  [
-                    {
-                      name: 'selenium',
-                      image: 'selenium/standalone-' + browser + ':' + selenium,
-                      detach: true,
-                      environment: {
-                        SE_NODE_SESSION_TIMEOUT: '999999',
-                        START_XVFB: 'true',
-                      },
-                      volumes: [{
-                        name: 'shm',
-                        path: '/dev/shm',
-                      }],
-                      commands: [
-                        'cat /etc/hosts',
-                        'DOMAIN="' + distro_default + '.com"',
-                        'APP_DOMAIN="' + name + '.' + distro_default + '.com"',
-                        'getent hosts $APP_DOMAIN | sed "s/$APP_DOMAIN/auth.$DOMAIN/g" | sudo tee -a /etc/hosts',
-                        'cat /etc/hosts',
-                        '/opt/bin/entry_point.sh',
-                      ],
-                    },
-
-                    {
-                      name: 'selenium-video',
-                      image: 'selenium/video:ffmpeg-8.0-20251212',
-                      detach: true,
-                      environment: {
-                        DISPLAY_CONTAINER_NAME: 'selenium',
-                        FILE_NAME: 'video.mkv',
-                      },
-                      volumes: [
-                        {
-                          name: 'shm',
-                          path: '/dev/shm',
-                        },
-                        {
-                          name: 'videos',
-                          path: '/videos',
-                        },
-                      ],
-                    },
-                    {
-                      name: 'test-ui',
-                      image: 'python:' + python,
-                      commands: [
-                        'cd test',
-                        './deps.sh',
-                        './wait-for-selenium.sh',
-                        'py.test -x -s ui.py --distro=' + distro_default + ' --ver=$DRONE_BUILD_NUMBER --app=' + name + ' --browser=' + browser,
-                      ],
-                      volumes: [{
-                        name: 'videos',
-                        path: '/videos',
-                      }],
-                    },
-                  ]
-                )
-                else []) +
-           (if arch == 'amd64' then [
-              {
-                name: 'test-upgrade',
-                image: 'python:' + python,
-                commands: [
-                  'cd test',
-                  './deps.sh',
-                  './wait-for-selenium.sh',
-                  'py.test -x -s upgrade.py --distro=' + distro_default + ' --ver=$DRONE_BUILD_NUMBER --app=' + name + ' --browser=' + browser,
-                ],
-                privileged: true,
-                volumes: [{
-                  name: 'videos',
-                  path: '/videos',
-                }],
-              },
-            ] else []) + [
+           ] + (if arch == 'amd64' then [
+                  {
+                    name: 'e2e',
+                    image: playwright,
+                    commands: [
+                      './test/e2e/run.sh e2e specs/01-smoke.spec.ts',
+                    ],
+                  },
+                  {
+                    name: 'test-upgrade-prev',
+                    image: 'python:' + python,
+                    commands: [
+                      './ci/test.sh upgrade_prev.py ' + distro_default + ' ' + name,
+                    ],
+                  },
+                  {
+                    name: 'e2e-before-upgrade',
+                    image: playwright,
+                    commands: [
+                      './test/e2e/run.sh e2e-before-upgrade specs/02-pre-upgrade.spec.ts',
+                    ],
+                  },
+                  {
+                    name: 'test-upgrade',
+                    image: 'python:' + python,
+                    commands: [
+                      './ci/test.sh upgrade.py ' + distro_default + ' ' + name,
+                    ],
+                  },
+                  {
+                    name: 'e2e-after-upgrade',
+                    image: playwright,
+                    commands: [
+                      './test/e2e/run.sh e2e-after-upgrade specs/03-post-upgrade.spec.ts',
+                    ],
+                  },
+                ] else []) + [
       {
         name: 'publish',
         image: 'syncloud/store-publisher:' + store_publisher,
@@ -208,18 +160,6 @@ local build(arch, test_ui, dind) = [
     },
     services: [
       {
-        name: 'docker',
-        image: 'docker:' + dind,
-        privileged: true,
-        volumes: [
-          {
-            name: 'dockersock',
-            path: '/var/run',
-          },
-        ],
-      },
-    ] + [
-      {
         name: name + '.' + distro + '.com',
         image: platform_image(distro),
         privileged: true,
@@ -250,23 +190,9 @@ local build(arch, test_ui, dind) = [
           path: '/dev',
         },
       },
-      {
-        name: 'shm',
-        temp: {},
-      },
-      {
-        name: 'videos',
-        temp: {},
-      },
-      {
-        name: 'dockersock',
-        temp: {},
-      },
     ],
   },
 ];
 
-build('amd64', true, '20.10.21-dind') +
-build('arm64', false, '20.10.21-dind')
-
-
+build('amd64') +
+build('arm64')
