@@ -15,14 +15,28 @@ import (
 	"go.uber.org/zap"
 )
 
+const (
+	webURL       = "http://unix/web/"
+	completeURL  = "http://unix/Startup/Complete"
+	maxAttempts  = 20
+	attemptDelay = 10 * time.Second
+	serverUnit   = "snap.jellyfin.server.service"
+	logTailLines = "40"
+	fatalMarker  = "Unhandled Exception"
+)
+
+type CommandRunner interface {
+	Run(app string, args ...string) (string, error)
+}
+
 type Jellyfin struct {
 	appDir, dataDir string
 	client          *http.Client
-	executor        *Executor
+	executor        CommandRunner
 	logger          *zap.Logger
 }
 
-func NewJellyfin(appDir, dataDir string, executor *Executor, logger *zap.Logger) *Jellyfin {
+func NewJellyfin(appDir, dataDir string, executor CommandRunner, logger *zap.Logger) *Jellyfin {
 	return &Jellyfin{
 		appDir:  appDir,
 		dataDir: dataDir,
@@ -39,45 +53,72 @@ func NewJellyfin(appDir, dataDir string, executor *Executor, logger *zap.Logger)
 }
 
 func (j *Jellyfin) Complete() error {
-
-	// Wait for REST endpoint to be available
-	webURL := "http://unix/web/"
-	maxWebAttempts := 20
-	for attempt := 0; attempt < maxWebAttempts; attempt++ {
-		resp, err := j.client.Get(webURL)
-		if err == nil && resp.StatusCode == 200 {
-			resp.Body.Close()
-			break
-		}
-		if resp != nil {
-			resp.Body.Close()
-		}
-		if attempt == maxWebAttempts-1 {
-			return fmt.Errorf("web endpoint not available after %d attempts", maxWebAttempts)
-		}
-		time.Sleep(10 * time.Second)
+	err := j.waitForWeb()
+	if err != nil {
+		return err
 	}
+	return j.completeStartup()
+}
 
-	// Complete startup wizard
-	completeURL := "http://unix/Startup/Complete"
-	maxAttempts := 20
-	var lastError string
+func (j *Jellyfin) waitForWeb() error {
+	lastResponse := "not attempted"
 	for attempt := 0; attempt < maxAttempts; attempt++ {
-		resp, err := j.client.Post(completeURL, "application/json", nil)
+		if attempt > 0 {
+			time.Sleep(attemptDelay)
+		}
+
+		resp, err := j.client.Get(webURL)
 		if err != nil {
-			lastError = fmt.Sprintf("error: %v", err)
+			lastResponse = err.Error()
 		} else {
-			lastError = fmt.Sprintf("%d: request failed", resp.StatusCode)
-			if resp.StatusCode == 204 {
-				resp.Body.Close()
+			status := resp.StatusCode
+			resp.Body.Close()
+			if status == http.StatusOK {
 				return nil
 			}
-			resp.Body.Close()
+			lastResponse = fmt.Sprintf("HTTP %d", status)
 		}
-		time.Sleep(10 * time.Second)
+
+		output := j.serverLog()
+		if strings.Contains(output, fatalMarker) {
+			return fmt.Errorf("server failed to start, last web response: %s\n%s", lastResponse, output)
+		}
 	}
 
-	return fmt.Errorf("failed to complete startup: %s", lastError)
+	return fmt.Errorf("web endpoint not available after %d attempts, last web response: %s\n%s",
+		maxAttempts, lastResponse, j.serverLog())
+}
+
+func (j *Jellyfin) completeStartup() error {
+	lastResponse := "not attempted"
+	for attempt := 0; attempt < maxAttempts; attempt++ {
+		if attempt > 0 {
+			time.Sleep(attemptDelay)
+		}
+
+		resp, err := j.client.Post(completeURL, "application/json", nil)
+		if err != nil {
+			lastResponse = err.Error()
+			continue
+		}
+		status := resp.StatusCode
+		resp.Body.Close()
+		if status == http.StatusNoContent {
+			return nil
+		}
+		lastResponse = fmt.Sprintf("HTTP %d", status)
+	}
+
+	return fmt.Errorf("failed to complete startup after %d attempts, last response: %s\n%s",
+		maxAttempts, lastResponse, j.serverLog())
+}
+
+func (j *Jellyfin) serverLog() string {
+	output, err := j.executor.Run("journalctl", "-u", serverUnit, "-n", logTailLines, "--no-pager")
+	if err != nil {
+		return fmt.Sprintf("cannot read the journal of %s: %v\n%s", serverUnit, err, output)
+	}
+	return fmt.Sprintf("last %s journal lines of %s:\n%s", logTailLines, serverUnit, output)
 }
 
 func (j *Jellyfin) UpdateAuthPlugin() error {

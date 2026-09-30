@@ -8,4 +8,3 @@ DIR = dirname(__file__)
 @pytest.fixture(scope="session")
 def project_dir():
     return join(dirname(__file__), '..')
-

@@ -1,40 +1,33 @@
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
+import base64
+
+import requests
+
+CRF_MARKER = '19'
+ID_FILE = '/tmp/syncloud/before-id'
+VERSION_FILE = '/tmp/syncloud/before-version'
 
 
-def login(selenium, device_user, device_password, mode):
-    selenium.open_app()
-    selenium.screenshot(mode+'-index')
-    # selenium.click_by(By.XPATH, '//span[.="Next"]')
-    selenium.wait_or_screenshot(EC.element_to_be_clickable((By.CSS_SELECTOR, "#txtManualName")))
-    selenium.find_by_id("txtManualName").send_keys(device_user)
-    password = selenium.find_by_id("txtManualPassword")
-    password.send_keys(device_password)
-    selenium.screenshot(mode+'-login')
-    password.send_keys(Keys.RETURN)
-    selenium.screenshot(mode+'-login_progress')
-    selenium.find_by(By.XPATH, "//h2[.='Nothing here.']")
-    selenium.screenshot(mode+'-main')
+def server_info(app_domain):
+    response = requests.get('https://{0}/System/Info/Public'.format(app_domain), verify=False)
+    assert response.status_code == 200, response.text
+    return response.json()
 
-def scan_prev(selenium, mode):
-    selenium.click_by(By.XPATH, "//button[@title='Menu']")
-    selenium.find_by(By.XPATH, "//span[.='Settings']")
-    selenium.find_by(By.XPATH, "//span[.='Sign Out']")
-    selenium.click_by(By.XPATH, "//span[.='Dashboard']")
-    selenium.click_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
-    selenium.screenshot(mode+'-scan')
-    selenium.find_by(By.XPATH, "//h3[.='Active Devices']")
-    selenium.invisible_by(By.XPATH, "//span[.='Running Tasks']")
-    selenium.screenshot(mode+'-scan-done')
 
-def scan_next(selenium, mode):
-    selenium.click_by(By.XPATH, "//button[@title='Menu']")
-    selenium.find_by(By.XPATH, "//span[.='Settings']")
-    selenium.find_by(By.XPATH, "//span[.='Sign Out']")
-    selenium.click_by(By.XPATH, "//span[.='Dashboard']")
-    selenium.click_by(By.XPATH, "//button[contains(.,'Scan All Libraries')]")
-    selenium.screenshot(mode+'-scan')
-    selenium.find_by(By.XPATH, "//span[.='Devices']")
-    selenium.invisible_by(By.XPATH, "//span[.='Running Tasks']")
-    selenium.screenshot(mode+'-scan-done')
+def read_file(device, path):
+    output = device.run_ssh('base64 -w0 {0}'.format(path))
+    lines = [line.strip() for line in output.splitlines() if line.strip()]
+    assert lines, 'nothing read from {0}: {1}'.format(path, output)
+    return base64.b64decode(lines[-1]).decode()
+
+
+def write_file(device, path, content):
+    blob = base64.b64encode(content.encode()).decode()
+    device.run_ssh('echo {0} | base64 -d > {1}'.format(blob, path))
+
+
+def encoding_xml(device, snap_data_dir):
+    return read_file(device, encoding_path(snap_data_dir))
+
+
+def encoding_path(snap_data_dir):
+    return '{0}/config/encoding.xml'.format(snap_data_dir)

@@ -1,11 +1,13 @@
+name: jellyfin
+summary: Jellyfin Media System
+description: The Free Software Media System
+grade: stable
+
 apps:
   server:
     command: bin/service.server.sh
     user: jellyfin
     daemon: simple
-    plugs:
-    - network
-    - network-bind
     restart-condition: always
     start-timeout: 2000s
     restart-delay: 10s
@@ -14,12 +16,12 @@ apps:
     command: bin/service.nginx.sh
     user: jellyfin
     daemon: simple
-    plugs:
-    - network
-    - network-bind
     restart-condition: always
     start-timeout: 2000s
     restart-delay: 10s
+
+  cli:
+    command: bin/cli
 
   storage-change:
     command: bin/cli storage-change
@@ -35,9 +37,3 @@ apps:
 
   restore-post-start:
     command: bin/cli restore-post-start
-
-confinement: strict
-description: Jellyfin
-grade: stable
-name: jellyfin
-summary: Jellyfin
