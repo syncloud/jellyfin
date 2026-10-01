@@ -24,6 +24,7 @@ echo "version: $VERSION" >> ${SNAP_DIR}/meta/snap.yaml
 echo "architectures:" >> ${SNAP_DIR}/meta/snap.yaml
 echo "- ${ARCH}" >> ${SNAP_DIR}/meta/snap.yaml
 echo $VERSION > ${SNAP_DIR}/version
+echo $VERSION > ${DIR}/version
 
 test -f ${SNAP_DIR}/meta/gui/icon.png
 test -x ${SNAP_DIR}/meta/hooks/install
