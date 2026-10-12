@@ -343,11 +343,7 @@ func (i *Installer) RestorePostStart() error {
 }
 
 func (i *Installer) AccessChange() error {
-	err := i.DomainChange()
-	if err != nil {
-		return err
-	}
-	return i.UpdateConfigs()
+	return i.DomainChange()
 }
 
 func (i *Installer) FixPermissions() error {
