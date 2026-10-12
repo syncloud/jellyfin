@@ -8,6 +8,9 @@ import time
 from syncloudlib.integration.hosts import add_host_alias
 from syncloudlib.integration.installer import local_install, wait_for_installer
 from syncloudlib.http import wait_for_rest
+
+from test import lib
+
 DIR = dirname(__file__)
 TMP_DIR = '/tmp/syncloud'
 
@@ -77,6 +80,18 @@ def test_ffprobe(device, app_dir, data_dir):
 def test_storage_change(device, app_dir, data_dir):
     device.run_ssh('snap run jellyfin.storage-change > {1}/log/storage-change.log'.format(app_dir, data_dir),
                    throw=False)
+
+
+def test_access_change_keeps_the_data_owned_by_the_app_user(device, snap_data_dir):
+    device.run_ssh('snap run jellyfin.access-change')
+    foreign = device.run_ssh('find {0}/data/plugins ! -user jellyfin'.format(snap_data_dir))
+    assert 'plugins' not in foreign, foreign
+
+
+def test_server_starts_after_access_change(device, app_domain):
+    device.run_ssh('snap restart jellyfin.server')
+    info = lib.wait_for_server(app_domain)
+    assert info['Version'], info
 
 
 def retry(method, retries=10):

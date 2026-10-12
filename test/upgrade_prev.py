@@ -47,3 +47,4 @@ def test_stamp_server_identity(device, app_domain):
     info = lib.server_info(app_domain)
     lib.write_file(device, lib.ID_FILE, info['Id'])
     lib.write_file(device, lib.VERSION_FILE, info['Version'])
+    lib.write_file(device, lib.REVISION_FILE, lib.snap_revision(device))
